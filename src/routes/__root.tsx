@@ -113,7 +113,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SparkleField />
+      <SiteHeader />
       <Outlet />
+      <SiteFooter />
     </QueryClientProvider>
   );
 }
