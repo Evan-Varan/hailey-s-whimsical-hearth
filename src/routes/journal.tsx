@@ -1,7 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Search, MessageCircle } from "lucide-react";
-import { SectionHeader } from "@/components/SparkleField";
-import { featured, morePosts, recentJournal } from "@/lib/blog-data";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { MessageSquareText, PenLine, Search } from "lucide-react";
+import { journalPosts, recentJournal } from "@/lib/blog-data";
 
 export const Route = createFileRoute("/journal")({
   head: () => ({
@@ -15,9 +14,13 @@ export const Route = createFileRoute("/journal")({
   component: JournalPage,
 });
 
-const allPosts = [...featured, ...morePosts];
-
 function JournalPage() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  if (pathname !== "/journal") {
+    return <Outlet />;
+  }
+
   return (
     <main className="max-w-7xl mx-auto px-6 py-16">
       <div className="text-center max-w-2xl mx-auto">
@@ -41,8 +44,8 @@ function JournalPage() {
       <div className="grid lg:grid-cols-3 gap-10 mt-16">
         {/* Posts list */}
         <div className="lg:col-span-2 space-y-8">
-          {allPosts.map((post, i) => (
-            <article key={i} className="paper-card overflow-hidden grid sm:grid-cols-[200px_1fr]">
+          {journalPosts.map((post) => (
+            <article key={post.slug} className="paper-card overflow-hidden grid sm:grid-cols-[200px_1fr]">
               <div className="relative h-48 sm:h-full overflow-hidden">
                 <img src={post.image} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
               </div>
@@ -52,8 +55,8 @@ function JournalPage() {
                 <p className="font-serif-display italic text-muted-foreground mt-2 flex-1">{post.excerpt}</p>
                 <div className="flex items-center justify-between mt-4">
                   <span className="font-serif-display italic text-sm text-muted-foreground">{post.date} · {post.read}</span>
-                  <Link to="/journal" className="inline-flex items-center gap-2 text-primary font-serif-display italic text-sm hover:gap-3 transition-all">
-                    read entry <ArrowRight className="w-3 h-3" />
+                  <Link to="/journal/$slug" params={{ slug: post.slug }} className="inline-flex items-center gap-2 text-primary font-serif-display italic text-sm hover:gap-3 transition-all">
+                    read entry <PenLine className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
@@ -67,9 +70,11 @@ function JournalPage() {
             <span className="tag-chip">recent journal</span>
             <ul className="mt-4 divide-y divide-border">
               {recentJournal.map((j, i) => (
-                <li key={i} className="py-3 flex items-start gap-4 group cursor-pointer">
+                <li key={i} className="py-3">
+                  <Link to="/journal/$slug" params={{ slug: j.slug }} className="flex items-start gap-4 group">
                   <span className="font-hand text-2xl text-accent w-14 shrink-0">{j.date}</span>
                   <span className="font-serif-display text-foreground/85 group-hover:text-primary transition-colors">{j.title}</span>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -93,7 +98,7 @@ function JournalPage() {
             </p>
             <p className="font-hand text-xl text-foreground mt-2">— Marigold W.</p>
             <a href="#" className="mt-6 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm">
-              <MessageCircle className="w-4 h-4" /> read all comments
+              <MessageSquareText className="w-4 h-4" /> read all comments
             </a>
           </div>
         </aside>

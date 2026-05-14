@@ -10,24 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as JournalRouteImport } from './routes/journal'
-import { Route as HobbiesRouteImport } from './routes/hobbies'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as AstrologyRouteImport } from './routes/astrology'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JournalSlugRouteImport } from './routes/journal.$slug'
 
 const JournalRoute = JournalRouteImport.update({
   id: '/journal',
   path: '/journal',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HobbiesRoute = HobbiesRouteImport.update({
-  id: '/hobbies',
-  path: '/hobbies',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AstrologyRoute = AstrologyRouteImport.update({
+  id: '/astrology',
+  path: '/astrology',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -40,43 +41,64 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JournalSlugRoute = JournalSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => JournalRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
-  '/hobbies': typeof HobbiesRoute
-  '/journal': typeof JournalRoute
+  '/journal': typeof JournalRouteWithChildren
+  '/journal/$slug': typeof JournalSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
-  '/hobbies': typeof HobbiesRoute
-  '/journal': typeof JournalRoute
+  '/journal': typeof JournalRouteWithChildren
+  '/journal/$slug': typeof JournalSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
-  '/hobbies': typeof HobbiesRoute
-  '/journal': typeof JournalRoute
+  '/journal': typeof JournalRouteWithChildren
+  '/journal/$slug': typeof JournalSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/gallery' | '/hobbies' | '/journal'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/astrology'
+    | '/gallery'
+    | '/journal'
+    | '/journal/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/gallery' | '/hobbies' | '/journal'
-  id: '__root__' | '/' | '/about' | '/gallery' | '/hobbies' | '/journal'
+  to: '/' | '/about' | '/astrology' | '/gallery' | '/journal' | '/journal/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/astrology'
+    | '/gallery'
+    | '/journal'
+    | '/journal/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AstrologyRoute: typeof AstrologyRoute
   GalleryRoute: typeof GalleryRoute
-  HobbiesRoute: typeof HobbiesRoute
-  JournalRoute: typeof JournalRoute
+  JournalRoute: typeof JournalRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -88,18 +110,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JournalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/hobbies': {
-      id: '/hobbies'
-      path: '/hobbies'
-      fullPath: '/hobbies'
-      preLoaderRoute: typeof HobbiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/gallery': {
       id: '/gallery'
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/astrology': {
+      id: '/astrology'
+      path: '/astrology'
+      fullPath: '/astrology'
+      preLoaderRoute: typeof AstrologyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -116,16 +138,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journal/$slug': {
+      id: '/journal/$slug'
+      path: '/$slug'
+      fullPath: '/journal/$slug'
+      preLoaderRoute: typeof JournalSlugRouteImport
+      parentRoute: typeof JournalRoute
+    }
   }
 }
+
+interface JournalRouteChildren {
+  JournalSlugRoute: typeof JournalSlugRoute
+}
+
+const JournalRouteChildren: JournalRouteChildren = {
+  JournalSlugRoute: JournalSlugRoute,
+}
+
+const JournalRouteWithChildren =
+  JournalRoute._addFileChildren(JournalRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AstrologyRoute: AstrologyRoute,
   GalleryRoute: GalleryRoute,
-  HobbiesRoute: HobbiesRoute,
-  JournalRoute: JournalRoute,
+  JournalRoute: JournalRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

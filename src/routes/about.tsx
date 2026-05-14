@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, Mail, Sparkles, ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpenText, Feather, Mailbox } from "lucide-react";
 import aboutImg from "@/assets/about-hailey.jpg";
 
 export const Route = createFileRoute("/about")({
@@ -62,20 +62,20 @@ function AboutPage() {
       <div className="paper-card p-10 md:p-14 text-center relative overflow-hidden mt-16">
         <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-secondary/40 blur-3xl" aria-hidden />
         <div className="absolute -bottom-12 -right-12 w-56 h-56 rounded-full bg-accent/30 blur-3xl" aria-hidden />
-        <Sparkles className="w-6 h-6 text-accent mx-auto animate-twinkle" />
+        <Mailbox className="w-6 h-6 text-accent mx-auto" />
         <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-4">Letters from the cottage</h2>
         <p className="font-serif-display italic text-lg text-muted-foreground mt-4 max-w-xl mx-auto">
           One slow letter a month. Tarot pulls, free patterns, what I'm reading, and small notes from the woods.
         </p>
         <form className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
           <input type="email" required placeholder="your email, gentle reader" className="flex-1 px-5 py-3 rounded-full bg-card border border-border focus:border-primary focus:outline-none font-serif-display text-foreground placeholder:text-muted-foreground" />
-          <button type="submit" className="btn-primary justify-center">Subscribe <Heart className="w-4 h-4" /></button>
+          <button type="submit" className="btn-primary justify-center">Subscribe <Feather className="w-4 h-4" /></button>
         </form>
       </div>
 
       <div className="text-center mt-10">
         <Link to="/journal" className="btn-ghost">
-          <Mail className="w-4 h-4" /> read the journal <ArrowRight className="w-4 h-4" />
+          <BookOpenText className="w-4 h-4" /> read the journal <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
     </main>
