@@ -186,32 +186,54 @@
     box-shadow: 0 20px 40px -16px oklch(0.4 0.05 150 / 0.25);
   }
 
+  /* Editorial kicker — replaces generic AI rounded pill tags.
+     Italic serif label with a thin hand-drawn underline mark. */
   .tag-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.7rem;
-    border-radius: 999px;
-    font-family: var(--font-sans);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    background: color-mix(in oklab, var(--color-sage) 28%, transparent);
+    gap: 0.5rem;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
     color: var(--color-forest);
-    border: 1px solid color-mix(in oklab, var(--color-sage) 40%, transparent);
+    background: none;
+    border: none;
+    padding: 0;
+    text-transform: lowercase;
   }
-  .tag-chip.rose {
-    background: color-mix(in oklab, var(--color-rose) 35%, transparent);
-    color: oklch(0.38 0.08 20);
-    border-color: color-mix(in oklab, var(--color-rose) 50%, transparent);
+  .tag-chip::before {
+    content: "";
+    width: 22px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.55;
   }
-  .dark .tag-chip.rose { color: oklch(0.92 0.04 25); }
-  .tag-chip.gold {
-    background: color-mix(in oklab, var(--color-gold) 30%, transparent);
-    color: oklch(0.4 0.09 70);
-    border-color: color-mix(in oklab, var(--color-gold) 45%, transparent);
+  .tag-chip.rose { color: oklch(0.42 0.09 18); }
+  .dark .tag-chip.rose { color: oklch(0.86 0.06 22); }
+  .tag-chip.gold { color: oklch(0.45 0.10 70); }
+  .dark .tag-chip.gold { color: oklch(0.86 0.09 80); }
+
+  /* Stamped category mark — for category tags overlaid on images.
+     Hand-stamped feel with an asymmetric corner radius. */
+  .cat-stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    line-height: 1;
+    color: var(--color-foreground);
+    padding: 0.45rem 0.8rem 0.3rem;
+    background: color-mix(in oklab, var(--color-card) 90%, transparent);
+    border: 1px dashed color-mix(in oklab, var(--color-forest) 40%, transparent);
+    border-radius: 4px 14px 4px 14px;
+    backdrop-filter: blur(6px);
   }
-  .dark .tag-chip.gold { color: oklch(0.92 0.06 80); }
+  .cat-stamp .dot {
+    width: 6px; height: 6px; border-radius: 999px;
+    background: var(--color-gold);
+  }
 
   .ornate-border {
     position: relative;
