@@ -15,6 +15,12 @@ import { Route as AstrologyRouteImport } from './routes/astrology'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JournalSlugRouteImport } from './routes/journal.$slug'
+import { Route as ApiSubstackRouteImport } from './routes/api/substack'
+import { Route as ApiInstagramRouteImport } from './routes/api/instagram'
+import { Route as ApiHoroscopeRouteImport } from './routes/api/horoscope'
+import { Route as ApiAstrologyTransitsRouteImport } from './routes/api/astrology-transits'
+import { Route as ApiSpotifyTopTracksRouteImport } from './routes/api/spotify/top-tracks'
+import { Route as ApiSpotifyNowPlayingRouteImport } from './routes/api/spotify/now-playing'
 
 const JournalRoute = JournalRouteImport.update({
   id: '/journal',
@@ -46,6 +52,36 @@ const JournalSlugRoute = JournalSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => JournalRoute,
 } as any)
+const ApiSubstackRoute = ApiSubstackRouteImport.update({
+  id: '/api/substack',
+  path: '/api/substack',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInstagramRoute = ApiInstagramRouteImport.update({
+  id: '/api/instagram',
+  path: '/api/instagram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHoroscopeRoute = ApiHoroscopeRouteImport.update({
+  id: '/api/horoscope',
+  path: '/api/horoscope',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAstrologyTransitsRoute = ApiAstrologyTransitsRouteImport.update({
+  id: '/api/astrology-transits',
+  path: '/api/astrology-transits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSpotifyTopTracksRoute = ApiSpotifyTopTracksRouteImport.update({
+  id: '/api/spotify/top-tracks',
+  path: '/api/spotify/top-tracks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSpotifyNowPlayingRoute = ApiSpotifyNowPlayingRouteImport.update({
+  id: '/api/spotify/now-playing',
+  path: '/api/spotify/now-playing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,7 +89,13 @@ export interface FileRoutesByFullPath {
   '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
   '/journal': typeof JournalRouteWithChildren
+  '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/horoscope': typeof ApiHoroscopeRoute
+  '/api/instagram': typeof ApiInstagramRoute
+  '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
+  '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
+  '/api/spotify/top-tracks': typeof ApiSpotifyTopTracksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +103,13 @@ export interface FileRoutesByTo {
   '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
   '/journal': typeof JournalRouteWithChildren
+  '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/horoscope': typeof ApiHoroscopeRoute
+  '/api/instagram': typeof ApiInstagramRoute
+  '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
+  '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
+  '/api/spotify/top-tracks': typeof ApiSpotifyTopTracksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,7 +118,13 @@ export interface FileRoutesById {
   '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
   '/journal': typeof JournalRouteWithChildren
+  '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/horoscope': typeof ApiHoroscopeRoute
+  '/api/instagram': typeof ApiInstagramRoute
+  '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
+  '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
+  '/api/spotify/top-tracks': typeof ApiSpotifyTopTracksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -80,9 +134,27 @@ export interface FileRouteTypes {
     | '/astrology'
     | '/gallery'
     | '/journal'
+    | '/api/astrology-transits'
+    | '/api/horoscope'
+    | '/api/instagram'
+    | '/api/substack'
     | '/journal/$slug'
+    | '/api/spotify/now-playing'
+    | '/api/spotify/top-tracks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/astrology' | '/gallery' | '/journal' | '/journal/$slug'
+  to:
+    | '/'
+    | '/about'
+    | '/astrology'
+    | '/gallery'
+    | '/journal'
+    | '/api/astrology-transits'
+    | '/api/horoscope'
+    | '/api/instagram'
+    | '/api/substack'
+    | '/journal/$slug'
+    | '/api/spotify/now-playing'
+    | '/api/spotify/top-tracks'
   id:
     | '__root__'
     | '/'
@@ -90,7 +162,13 @@ export interface FileRouteTypes {
     | '/astrology'
     | '/gallery'
     | '/journal'
+    | '/api/astrology-transits'
+    | '/api/horoscope'
+    | '/api/instagram'
+    | '/api/substack'
     | '/journal/$slug'
+    | '/api/spotify/now-playing'
+    | '/api/spotify/top-tracks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -99,6 +177,12 @@ export interface RootRouteChildren {
   AstrologyRoute: typeof AstrologyRoute
   GalleryRoute: typeof GalleryRoute
   JournalRoute: typeof JournalRouteWithChildren
+  ApiAstrologyTransitsRoute: typeof ApiAstrologyTransitsRoute
+  ApiHoroscopeRoute: typeof ApiHoroscopeRoute
+  ApiInstagramRoute: typeof ApiInstagramRoute
+  ApiSubstackRoute: typeof ApiSubstackRoute
+  ApiSpotifyNowPlayingRoute: typeof ApiSpotifyNowPlayingRoute
+  ApiSpotifyTopTracksRoute: typeof ApiSpotifyTopTracksRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,6 +229,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JournalSlugRouteImport
       parentRoute: typeof JournalRoute
     }
+    '/api/substack': {
+      id: '/api/substack'
+      path: '/api/substack'
+      fullPath: '/api/substack'
+      preLoaderRoute: typeof ApiSubstackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/instagram': {
+      id: '/api/instagram'
+      path: '/api/instagram'
+      fullPath: '/api/instagram'
+      preLoaderRoute: typeof ApiInstagramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/horoscope': {
+      id: '/api/horoscope'
+      path: '/api/horoscope'
+      fullPath: '/api/horoscope'
+      preLoaderRoute: typeof ApiHoroscopeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/astrology-transits': {
+      id: '/api/astrology-transits'
+      path: '/api/astrology-transits'
+      fullPath: '/api/astrology-transits'
+      preLoaderRoute: typeof ApiAstrologyTransitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/spotify/top-tracks': {
+      id: '/api/spotify/top-tracks'
+      path: '/api/spotify/top-tracks'
+      fullPath: '/api/spotify/top-tracks'
+      preLoaderRoute: typeof ApiSpotifyTopTracksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/spotify/now-playing': {
+      id: '/api/spotify/now-playing'
+      path: '/api/spotify/now-playing'
+      fullPath: '/api/spotify/now-playing'
+      preLoaderRoute: typeof ApiSpotifyNowPlayingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -165,6 +291,12 @@ const rootRouteChildren: RootRouteChildren = {
   AstrologyRoute: AstrologyRoute,
   GalleryRoute: GalleryRoute,
   JournalRoute: JournalRouteWithChildren,
+  ApiAstrologyTransitsRoute: ApiAstrologyTransitsRoute,
+  ApiHoroscopeRoute: ApiHoroscopeRoute,
+  ApiInstagramRoute: ApiInstagramRoute,
+  ApiSubstackRoute: ApiSubstackRoute,
+  ApiSpotifyNowPlayingRoute: ApiSpotifyNowPlayingRoute,
+  ApiSpotifyTopTracksRoute: ApiSpotifyTopTracksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

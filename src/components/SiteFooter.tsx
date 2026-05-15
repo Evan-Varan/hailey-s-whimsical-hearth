@@ -1,4 +1,4 @@
-import { Images, Instagram, Mail } from "lucide-react";
+import { Envelope, InstagramLogo, PinterestLogo } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 
 export function SiteFooter() {
@@ -20,9 +20,9 @@ export function SiteFooter() {
         <div className="md:text-right">
           <p className="font-sans-ui text-[11px] uppercase tracking-[0.25em] text-muted-foreground">find me</p>
           <div className="flex md:justify-end items-center gap-2 mt-3">
-            <a href="#" aria-label="Instagram" className="p-2 rounded-full hover:bg-muted transition-colors"><Instagram className="w-4 h-4" /></a>
-            <a href="#" aria-label="Email" className="p-2 rounded-full hover:bg-muted transition-colors"><Mail className="w-4 h-4" /></a>
-            <a href="#" aria-label="Pinterest" className="p-2 rounded-full hover:bg-muted transition-colors"><Images className="w-4 h-4" /></a>
+            <a href="#" aria-label="Instagram" className="p-2 rounded-full hover:bg-muted transition-colors"><InstagramLogo weight="duotone" className="w-4 h-4" /></a>
+            <a href="#" aria-label="Email" className="p-2 rounded-full hover:bg-muted transition-colors"><Envelope weight="duotone" className="w-4 h-4" /></a>
+            <a href="#" aria-label="Pinterest" className="p-2 rounded-full hover:bg-muted transition-colors"><PinterestLogo weight="duotone" className="w-4 h-4" /></a>
           </div>
           <p className="font-serif-display italic text-xs text-muted-foreground mt-6">
             © {new Date().getFullYear()} ✦ all small magic reserved

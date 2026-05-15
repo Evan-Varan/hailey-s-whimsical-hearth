@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Feather, Moon, SunMedium, Menu, X } from "lucide-react";
+import { Feather, List, Moon, SunDim, X } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
 const navItems = [
@@ -36,7 +36,7 @@ export function SiteHeader() {
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <span className="font-serif-display italic text-2xl text-primary leading-none">Hailey</span>
           <span className="font-serif-display italic text-2xl text-secondary-foreground leading-none">Adkins</span>
-          <Feather className="w-4 h-4 text-accent" aria-hidden />
+          <Feather weight="duotone" className="w-4 h-4 text-accent" aria-hidden />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 font-serif-display italic text-[15px] text-muted-foreground">
@@ -59,14 +59,14 @@ export function SiteHeader() {
             onClick={() => setDark((d) => !d)}
             className="p-2 rounded-full hover:bg-muted transition-colors"
           >
-            {dark ? <SunMedium className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {dark ? <SunDim weight="duotone" className="w-4 h-4" /> : <Moon weight="duotone" className="w-4 h-4" />}
           </button>
           <button
             aria-label="Menu"
             className="md:hidden p-2 rounded-full hover:bg-muted transition-colors"
             onClick={() => setOpen((o) => !o)}
           >
-            {open ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            {open ? <X className="w-4 h-4" /> : <List className="w-4 h-4" />}
           </button>
         </div>
       </div>

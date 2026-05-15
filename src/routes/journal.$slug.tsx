@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BookOpenText, Feather, MessageSquareText } from "lucide-react";
+import { ArrowLeft, BookOpenText, ChatText, Feather } from "@phosphor-icons/react";
 
 import { getJournalPost, journalPosts } from "@/lib/blog-data";
 
@@ -49,7 +49,7 @@ function JournalEntryPage() {
           The entry may have moved, or the link may be unfinished.
         </p>
         <Link to="/journal" className="btn-ghost mt-8">
-          <ArrowLeft className="w-4 h-4" /> back to the journal
+          <ArrowLeft weight="bold" className="w-4 h-4" /> back to the journal
         </Link>
       </main>
     );
@@ -59,7 +59,7 @@ function JournalEntryPage() {
     <main>
       <article className="max-w-4xl mx-auto px-6 py-14 md:py-20">
         <Link to="/journal" className="inline-flex items-center gap-2 text-primary font-serif-display italic text-sm hover:gap-3 transition-all">
-          <ArrowLeft className="w-4 h-4" /> back to all entries
+          <ArrowLeft weight="bold" className="w-4 h-4" /> back to all entries
         </Link>
 
         <header className="mt-10">
@@ -71,7 +71,7 @@ function JournalEntryPage() {
             <span>{post.date}</span>
             <span>{post.read}</span>
             <span className="inline-flex items-center gap-2">
-              <BookOpenText className="w-4 h-4 text-primary" /> Hailey's journal
+              <BookOpenText weight="duotone" className="w-4 h-4 text-primary" /> Hailey's journal
             </span>
           </div>
         </header>
@@ -89,7 +89,7 @@ function JournalEntryPage() {
           </div>
 
           <aside className="paper-card p-6 lg:sticky lg:top-28">
-            <Feather className="w-5 h-5 text-accent" />
+            <Feather weight="duotone" className="w-5 h-5 text-accent" />
             <p className="font-sans-ui text-[11px] uppercase tracking-[0.22em] text-muted-foreground mt-4">field note</p>
             <p className="font-serif-display italic text-muted-foreground mt-3">{post.deckNote}</p>
           </aside>
@@ -100,7 +100,7 @@ function JournalEntryPage() {
         <div className="flex items-center justify-between gap-4">
           <h2 className="font-hand text-5xl text-foreground">Keep reading</h2>
           <Link to="/journal" className="hidden sm:inline-flex items-center gap-2 text-primary font-serif-display italic text-sm">
-            all entries <BookOpenText className="w-4 h-4" />
+            all entries <BookOpenText weight="duotone" className="w-4 h-4" />
           </Link>
         </div>
         <div className="grid md:grid-cols-3 gap-6 mt-8">
@@ -121,7 +121,7 @@ function JournalEntryPage() {
 
       <section className="max-w-3xl mx-auto px-6 py-14">
         <div className="paper-card p-8 text-center">
-          <MessageSquareText className="w-5 h-5 text-accent mx-auto" />
+          <ChatText weight="duotone" className="w-5 h-5 text-accent mx-auto" />
           <h2 className="font-hand text-4xl text-foreground mt-4">Leave a note in the margin</h2>
           <p className="font-serif-display italic text-muted-foreground mt-3">
             Comments are still handwritten for now, but this is where the conversation will live.

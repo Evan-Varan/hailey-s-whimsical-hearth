@@ -3,13 +3,13 @@ import {
   ArrowRight,
   BookOpenText,
   Coffee,
-  Eclipse,
   Feather,
   Images,
   Mailbox,
-  NotebookPen,
-  UserRound,
-} from "lucide-react";
+  Notebook,
+  Planet,
+  UserCircle,
+} from "@phosphor-icons/react";
 
 import heroImg from "@/assets/hero-cozy.jpg";
 import { SectionHeader } from "@/components/SparkleField";
@@ -47,16 +47,16 @@ function Home() {
             </p>
             <div className="flex flex-wrap gap-3 mt-10">
               <Link to="/journal" className="btn-primary">
-                Read the journal <ArrowRight className="w-4 h-4" />
+                Read the journal <ArrowRight weight="bold" className="w-4 h-4" />
               </Link>
               <Link to="/about" className="btn-ghost">
-                <UserRound className="w-4 h-4" /> About Hailey
+                <UserCircle weight="duotone" className="w-4 h-4" /> About Hailey
               </Link>
             </div>
             <div className="flex items-center gap-6 mt-12 text-xs font-serif-display italic text-muted-foreground">
-              <span className="flex items-center gap-2"><Feather className="w-3 h-3 text-accent" /> Est. ’24</span>
-              <span className="flex items-center gap-2"><BookOpenText className="w-3 h-3 text-primary" /> 153 entries</span>
-              <span className="flex items-center gap-2"><Coffee className="w-3 h-3 text-secondary-foreground" /> 4.2k readers</span>
+              <span className="flex items-center gap-2"><Feather weight="duotone" className="w-3 h-3 text-accent" /> Est. ’24</span>
+              <span className="flex items-center gap-2"><BookOpenText weight="duotone" className="w-3 h-3 text-primary" /> 153 entries</span>
+              <span className="flex items-center gap-2"><Coffee weight="duotone" className="w-3 h-3 text-secondary-foreground" /> 4.2k readers</span>
             </div>
           </div>
 
@@ -91,14 +91,14 @@ function Home() {
                 <h3 className="font-hand text-3xl text-foreground mt-3 leading-tight">{post.title}</h3>
                 <p className="font-serif-display text-muted-foreground mt-3 italic flex-1">{post.excerpt}</p>
                 <Link to="/journal/$slug" params={{ slug: post.slug }} className="mt-5 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm hover:gap-3 transition-all">
-                  read entry <ArrowRight className="w-3 h-3" />
+                  read entry <ArrowRight weight="bold" className="w-3 h-3" />
                 </Link>
               </div>
             </article>
           ))}
         </div>
         <div className="text-center mt-12">
-          <Link to="/journal" className="btn-ghost">browse the full journal <ArrowRight className="w-4 h-4" /></Link>
+          <Link to="/journal" className="btn-ghost">browse the full journal <ArrowRight weight="bold" className="w-4 h-4" /></Link>
         </div>
       </section>
 
@@ -106,10 +106,10 @@ function Home() {
       <section className="max-w-7xl mx-auto px-6 py-16">
         <SectionHeader eyebrow="wander a little" title="where to next?" />
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-          <WanderCard to="/journal" title="Journal" note="recent entries, slow notes, and small magic" icon={<NotebookPen className="w-5 h-5" />} />
-          <WanderCard to="/astrology" title="Astrology" note="a daily map for the mood of the sky" icon={<Eclipse className="w-5 h-5" />} />
-          <WanderCard to="/gallery" title="Gallery" note="a little visual scrapbook" icon={<Images className="w-5 h-5" />} />
-          <WanderCard to="/about" title="About Hailey" note="hello, friend — come in, sit by the fire" icon={<UserRound className="w-5 h-5" />} />
+          <WanderCard to="/journal" title="Journal" note="recent entries, slow notes, and small magic" icon={<Notebook weight="duotone" className="w-5 h-5" />} />
+          <WanderCard to="/astrology" title="Astrology" note="a daily map for the mood of the sky" icon={<Planet weight="duotone" className="w-5 h-5" />} />
+          <WanderCard to="/gallery" title="Gallery" note="a little visual scrapbook" icon={<Images weight="duotone" className="w-5 h-5" />} />
+          <WanderCard to="/about" title="About Hailey" note="hello, friend — come in, sit by the fire" icon={<UserCircle weight="duotone" className="w-5 h-5" />} />
         </div>
       </section>
 
@@ -118,14 +118,14 @@ function Home() {
         <div className="paper-card p-10 md:p-16 text-center relative overflow-hidden">
           <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-secondary/40 blur-3xl" aria-hidden />
           <div className="absolute -bottom-12 -right-12 w-56 h-56 rounded-full bg-accent/30 blur-3xl" aria-hidden />
-          <Mailbox className="w-6 h-6 text-accent mx-auto" />
+          <Mailbox weight="duotone" className="w-6 h-6 text-accent mx-auto" />
           <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-4">Letters from the cottage</h2>
           <p className="font-serif-display italic text-lg text-muted-foreground mt-4 max-w-xl mx-auto">
             One slow letter a month — tarot pulls, free patterns, what I'm reading, and small notes from the woods.
           </p>
           <form className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
             <input type="email" required placeholder="your email, gentle reader" className="flex-1 px-5 py-3 rounded-full bg-card border border-border focus:border-primary focus:outline-none font-serif-display text-foreground placeholder:text-muted-foreground" />
-            <button type="submit" className="btn-primary justify-center">Subscribe <Feather className="w-4 h-4" /></button>
+            <button type="submit" className="btn-primary justify-center">Subscribe <Feather weight="duotone" className="w-4 h-4" /></button>
           </form>
         </div>
       </section>
@@ -140,7 +140,7 @@ function WanderCard({ to, title, note, icon }: { to: "/journal" | "/astrology" |
       <p className="font-hand text-4xl mt-4 text-foreground">{title}</p>
       <p className="font-serif-display italic text-muted-foreground mt-2">{note}</p>
       <span className="mt-6 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm group-hover:gap-3 transition-all">
-        wander in <ArrowRight className="w-3 h-3" />
+        wander in <ArrowRight weight="bold" className="w-3 h-3" />
       </span>
     </Link>
   );
