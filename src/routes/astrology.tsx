@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarDots, CompassRose, MoonStars, Planet, SunDim } from "@phosphor-icons/react";
-import { useEffect, useMemo, useState } from "react";
+import { CalendarDots, MoonStars, Planet, SunDim, Sparkle, ArrowRight } from "@phosphor-icons/react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 export const Route = createFileRoute("/astrology")({
@@ -23,18 +23,18 @@ export const Route = createFileRoute("/astrology")({
 });
 
 const signs = [
-  { name: "Aries", tone: "begin again" },
-  { name: "Taurus", tone: "tend the body" },
-  { name: "Gemini", tone: "say the true thing" },
-  { name: "Cancer", tone: "come home to yourself" },
-  { name: "Leo", tone: "let warmth lead" },
-  { name: "Virgo", tone: "make one small order" },
-  { name: "Libra", tone: "choose harmony" },
-  { name: "Scorpio", tone: "trust the deep knowing" },
-  { name: "Sagittarius", tone: "follow the far light" },
-  { name: "Capricorn", tone: "build with patience" },
-  { name: "Aquarius", tone: "think wider" },
-  { name: "Pisces", tone: "soften the edges" },
+  { name: "Aries", tone: "begin again", dates: "Mar 21 – Apr 19", element: "fire" },
+  { name: "Taurus", tone: "tend the body", dates: "Apr 20 – May 20", element: "earth" },
+  { name: "Gemini", tone: "say the true thing", dates: "May 21 – Jun 20", element: "air" },
+  { name: "Cancer", tone: "come home to yourself", dates: "Jun 21 – Jul 22", element: "water" },
+  { name: "Leo", tone: "let warmth lead", dates: "Jul 23 – Aug 22", element: "fire" },
+  { name: "Virgo", tone: "make one small order", dates: "Aug 23 – Sep 22", element: "earth" },
+  { name: "Libra", tone: "choose harmony", dates: "Sep 23 – Oct 22", element: "air" },
+  { name: "Scorpio", tone: "trust the deep knowing", dates: "Oct 23 – Nov 21", element: "water" },
+  { name: "Sagittarius", tone: "follow the far light", dates: "Nov 22 – Dec 21", element: "fire" },
+  { name: "Capricorn", tone: "build with patience", dates: "Dec 22 – Jan 19", element: "earth" },
+  { name: "Aquarius", tone: "think wider", dates: "Jan 20 – Feb 18", element: "air" },
+  { name: "Pisces", tone: "soften the edges", dates: "Feb 19 – Mar 20", element: "water" },
 ] as const;
 
 type ZodiacSign = (typeof signs)[number]["name"];
@@ -175,13 +175,14 @@ function buildReading(selectedSign?: string) {
 
 function AstrologyPage() {
   const fallbackReading = useMemo(() => buildReading(), []);
-  const [selectedSign, setSelectedSign] = useState(fallbackReading.sign.name);
+  const [selectedSign, setSelectedSign] = useState<ZodiacSign>(fallbackReading.sign.name);
   const [horoscope, setHoroscope] = useState<HoroscopeApiResponse | null>(null);
   const [transits, setTransits] = useState<TransitApiResponse | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [locationStatus, setLocationStatus] = useState<"loading" | "ready" | "error">("loading");
   const [transitStatus, setTransitStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const readingRef = useRef<HTMLDivElement>(null);
   const reading = useMemo(() => buildReading(selectedSign), [selectedSign]);
   const dailyText = horoscope?.horoscope ?? reading.opening;
 
@@ -285,204 +286,251 @@ function AstrologyPage() {
     return () => controller.abort();
   }, [selectedSign, userLocation]);
 
+  function handleSelectSign(name: ZodiacSign) {
+    setSelectedSign(name);
+    requestAnimationFrame(() => {
+      readingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   return (
     <main className="overflow-hidden">
-      <section className="relative max-w-7xl mx-auto px-6 pt-16 pb-12 md:pt-20 md:pb-16">
+      {/* ── Hero ───────────────────────────────────────────── */}
+      <section className="relative max-w-6xl mx-auto px-6 pt-16 pb-10 md:pt-24 md:pb-14 text-center">
         <ConstellationBackdrop />
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-1.5">
+          <Sparkle weight="fill" className="w-3.5 h-3.5 text-accent" />
+          <span className="font-sans-ui text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            {formatApiDate(horoscope?.date) ?? reading.date}
+          </span>
+        </div>
+        <h1 className="font-hand text-6xl md:text-7xl lg:text-8xl text-foreground leading-[0.95] mt-6">
+          Today's sky,
+          <br />
+          <span className="text-primary italic">read gently.</span>
+        </h1>
+        <p className="font-serif-display text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl mx-auto leading-relaxed">
+          Choose your sign below for a daily horoscope, a small ritual, and the live planetary
+          weather above your sky.
+        </p>
 
-        <div className="grid lg:grid-cols-[1fr_440px] gap-12 items-center">
-          <div>
-            <span className="tag-chip gold">daily astrology</span>
-            <h1 className="font-hand text-6xl md:text-7xl lg:text-8xl text-foreground leading-[0.95] mt-5">
-              A little map
-              <br />
-              for <span className="text-primary italic">today's sky.</span>
-            </h1>
-            <p className="font-serif-display text-lg md:text-xl text-muted-foreground mt-8 max-w-2xl leading-relaxed">
-              Updated each day from a server-side horoscope feed, with a moon mood and small ritual
-              to carry with you.
-            </p>
-
-            <div className="grid sm:grid-cols-3 gap-4 mt-10">
-              <SkyStat
-                icon={<CalendarDots weight="duotone" className="w-4 h-4" />}
-                label="date"
-                value={formatApiDate(horoscope?.date) ?? reading.date}
-              />
-              <SkyStat
-                icon={<MoonStars weight="duotone" className="w-4 h-4" />}
-                label="moon mood"
-                value={reading.moonPhase}
-              />
-              <SkyStat
-                icon={<SunDim weight="duotone" className="w-4 h-4" />}
-                label="focus"
-                value={reading.sign.name}
-              />
-            </div>
-
-            <div className="mt-8 max-w-2xl">
-              <MoonPhaseStrip current={reading.moonPhase} />
-            </div>
-          </div>
-
-          <div className="relative min-h-[460px] flex items-center justify-center rounded-[2rem] border border-border/70 bg-card/35 shadow-[var(--shadow-soft)] overflow-hidden">
-            <div className="absolute inset-0 opacity-60" aria-hidden>
-              <div className="absolute left-10 top-8 h-1.5 w-1.5 rounded-full bg-accent" />
-              <div className="absolute right-16 top-20 h-1 w-1 rounded-full bg-primary" />
-              <div className="absolute bottom-16 left-16 h-1 w-1 rounded-full bg-secondary-foreground" />
-              <div className="absolute bottom-10 right-24 h-1.5 w-1.5 rounded-full bg-accent" />
-              <div className="absolute left-12 top-10 h-px w-32 rotate-[24deg] bg-border" />
-              <div className="absolute right-16 top-20 h-px w-28 -rotate-[34deg] bg-border" />
-              <div className="absolute bottom-16 left-16 h-px w-44 rotate-[10deg] bg-border" />
-            </div>
-            <div
-              className="absolute inset-5 rounded-full border border-border/80 animate-orbit-slower"
-              aria-hidden
+        <div className="mt-10 max-w-3xl mx-auto">
+          <div className="flex items-center justify-center gap-6 text-sm">
+            <HeroStat icon={<MoonStars weight="duotone" />} label="moon" value={reading.moonPhase} />
+            <span className="h-8 w-px bg-border" aria-hidden />
+            <HeroStat icon={<SunDim weight="duotone" />} label="focus" value={reading.house} />
+            <span className="h-8 w-px bg-border hidden sm:block" aria-hidden />
+            <HeroStat
+              icon={<CalendarDots weight="duotone" />}
+              label="number"
+              value={String(reading.luckyNumber)}
+              className="hidden sm:flex"
             />
-            <div
-              className="absolute inset-16 rounded-full border border-accent/50 animate-orbit-slow"
-              aria-hidden
-            />
-            <div
-              className="absolute inset-28 rounded-full border border-dashed border-primary/35"
-              aria-hidden
-            />
-            <div className="absolute inset-0 animate-float">
-              {signs.map((sign, index) => {
-                const angle = (index / signs.length) * 360;
-                return (
-                  <span
-                    key={sign.name}
-                    className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-card/85 border border-border shadow-sm text-foreground"
-                    style={{
-                      transform: `rotate(${angle}deg) translateY(-178px) rotate(-${angle}deg)`,
-                    }}
-                    aria-label={sign.name}
-                  >
-                    <ZodiacIcon sign={sign.name} className="h-6 w-6" />
-                  </span>
-                );
-              })}
-            </div>
-            <div className="paper-card relative z-10 w-56 h-56 rounded-full grid place-items-center text-center p-8">
-              <Planet weight="duotone" className="w-7 h-7 text-accent" />
-              <ZodiacIcon sign={reading.sign.name} className="mt-3 h-12 w-12 text-foreground" />
-              <p className="font-hand text-4xl text-foreground mt-1">{reading.sign.name}</p>
-              <p className="font-serif-display italic text-muted-foreground mt-1">
-                {reading.sign.tone}
-              </p>
-            </div>
           </div>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-8">
+      {/* ── Sign Selector (primary control) ───────────────── */}
+      <section className="sticky top-[64px] z-30 bg-background/85 backdrop-blur-md border-y border-border/70">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between gap-4 mb-3 px-2">
+            <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+              choose your sign
+            </p>
+            <p className="font-serif-display italic text-sm text-muted-foreground hidden sm:block">
+              showing <span className="text-foreground">{selectedSign}</span>
+            </p>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-thin">
+            {signs.map((sign) => {
+              const active = sign.name === selectedSign;
+              return (
+                <button
+                  type="button"
+                  key={sign.name}
+                  onClick={() => handleSelectSign(sign.name)}
+                  aria-pressed={active}
+                  className={`group flex-shrink-0 snap-start flex flex-col items-center gap-1.5 rounded-2xl border px-4 py-3 min-w-[88px] transition-all duration-300 ${
+                    active
+                      ? "border-primary bg-primary/10 shadow-[var(--shadow-soft)] -translate-y-0.5"
+                      : "border-border bg-card/50 hover:border-primary/50 hover:bg-card hover:-translate-y-0.5"
+                  }`}
+                >
+                  <ZodiacIcon
+                    sign={sign.name}
+                    className={`h-7 w-7 transition-colors ${
+                      active ? "text-primary" : "text-foreground/70 group-hover:text-foreground"
+                    }`}
+                  />
+                  <span
+                    className={`font-serif-display text-sm ${
+                      active ? "text-foreground italic" : "text-muted-foreground"
+                    }`}
+                  >
+                    {sign.name}
+                  </span>
+                  <span className="font-sans-ui text-[9px] uppercase tracking-[0.14em] text-muted-foreground/70">
+                    {sign.dates.split(" – ")[0]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Reading ───────────────────────────────────────── */}
+      <section ref={readingRef} className="max-w-6xl mx-auto px-6 py-16 scroll-mt-32">
+        <div className="grid lg:grid-cols-[1.4fr_1fr] gap-8">
+          {/* Main reading */}
           <article className="paper-card p-8 md:p-12 relative overflow-hidden">
             <div
-              className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-accent/20 blur-3xl"
+              className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-accent/15 blur-3xl"
               aria-hidden
             />
-            <div className="absolute right-8 top-8 hidden md:grid h-24 w-24 place-items-center rounded-full border border-border/80 text-primary/70" aria-hidden>
-              <ZodiacIcon sign={reading.sign.name} className="h-10 w-10" />
-            </div>
-            <span className="tag-chip rose">today's reading</span>
-            <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-4">
-              {reading.sign.name} leads the lantern.
-            </h2>
-            <div className="grid sm:grid-cols-3 gap-3 mt-7">
-              <ReadingDetail label="house" value={reading.house} />
-              <ReadingDetail label="companion" value={reading.supportingSign.name} />
-              <ReadingDetail label="number" value={String(reading.luckyNumber)} />
-            </div>
-            <div className="font-serif-display text-lg text-foreground/85 leading-relaxed space-y-5 mt-6 relative z-10">
-              {status === "loading" ? (
-                <p className="italic text-muted-foreground">Reading the sky...</p>
-              ) : null}
-              {status === "error" ? (
-                <p className="italic text-muted-foreground">
-                  The live horoscope feed is resting, so this fallback reading is here for today.
+            <div className="relative z-10">
+              <div className="flex items-start justify-between gap-6 flex-wrap">
+                <div>
+                  <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                    daily reading
+                  </p>
+                  <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-2">
+                    {reading.sign.name}
+                  </h2>
+                  <p className="font-serif-display italic text-muted-foreground mt-1">
+                    {reading.sign.dates} · {reading.sign.element}
+                  </p>
+                </div>
+                <div className="grid place-items-center h-20 w-20 rounded-full border border-border bg-background/60 text-primary">
+                  <ZodiacIcon sign={reading.sign.name} className="h-10 w-10" />
+                </div>
+              </div>
+
+              <div className="h-px bg-border my-8" />
+
+              <div className="font-serif-display text-lg text-foreground/85 leading-relaxed space-y-5">
+                {status === "loading" ? (
+                  <p className="italic text-muted-foreground">Reading the sky…</p>
+                ) : null}
+                {status === "error" ? (
+                  <p className="italic text-muted-foreground text-sm">
+                    The live feed is resting — here's today's fallback reading.
+                  </p>
+                ) : null}
+                <p className="text-xl">{dailyText}</p>
+                <p>
+                  With the <em>{reading.moonPhase}</em> moving through themes of {reading.house},
+                  the day favors <em>{reading.sign.tone}</em>. Let{" "}
+                  {reading.supportingSign.name} offer a companion note:{" "}
+                  <em>{reading.supportingSign.tone}</em>.
                 </p>
-              ) : null}
-              <p>{dailyText}</p>
-              <p>
-                With the {reading.moonPhase} moving through themes of {reading.house}, the day
-                favors {reading.sign.tone}. Let {reading.supportingSign.name} offer a companion
-                note: {reading.supportingSign.tone}.
-              </p>
-              <p className="italic text-muted-foreground">{reading.invitation}</p>
+              </div>
+
               {horoscope?.source ? (
-                <p className="font-sans-ui text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                  Source: {horoscope.source}
+                <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground mt-8 pt-6 border-t border-border">
+                  Source · {horoscope.source}
                 </p>
               ) : null}
             </div>
           </article>
 
+          {/* Side: ritual + caution + moon */}
           <aside className="space-y-6">
-            <div className="paper-card p-6">
-              <span className="tag-chip gold">small ritual</span>
-              <div className="mt-5 flex gap-4">
-                <div className="h-12 w-12 rounded-full bg-secondary/45 flex items-center justify-center text-forest dark:text-foreground shrink-0">
-                  <CompassRose weight="duotone" className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-hand text-3xl text-foreground">
-                    Lucky number {reading.luckyNumber}
-                  </p>
-                  <p className="font-serif-display italic text-muted-foreground mt-1">
-                    {reading.invitation}
-                  </p>
-                </div>
+            <div className="paper-card p-6 bg-gradient-to-br from-accent/15 to-transparent">
+              <div className="flex items-center gap-2 text-accent-foreground/80">
+                <Sparkle weight="duotone" className="w-4 h-4" />
+                <span className="font-sans-ui text-[10px] uppercase tracking-[0.22em]">
+                  small ritual
+                </span>
               </div>
+              <p className="font-hand text-4xl text-foreground mt-3">
+                Lucky #{reading.luckyNumber}
+              </p>
+              <p className="font-serif-display italic text-foreground/80 mt-3 leading-relaxed">
+                {reading.invitation}
+              </p>
             </div>
 
             <div className="paper-card p-6">
-              <span className="tag-chip">watch for</span>
-              <p className="font-serif-display italic text-lg text-muted-foreground mt-5">
+              <span className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                watch for
+              </span>
+              <p className="font-serif-display italic text-lg text-foreground/85 mt-3 leading-relaxed">
                 {reading.caution}
               </p>
             </div>
 
             <div className="paper-card p-6">
-              <span className="tag-chip rose">choose your sign</span>
-              <div className="grid grid-cols-3 gap-2 mt-5">
-                {signs.map((sign) => (
-                  <button
-                    type="button"
-                    key={sign.name}
-                    onClick={() => setSelectedSign(sign.name)}
-                    aria-pressed={sign.name === selectedSign}
-                    className={`min-h-20 rounded-xl border grid place-items-center gap-1 py-3 transition-transform duration-300 hover:-translate-y-1 ${
-                      sign.name === selectedSign
-                        ? "bg-accent/25 border-accent text-accent-foreground"
-                        : "bg-card border-border text-muted-foreground"
-                    }`}
-                    title={sign.name}
-                    aria-label={sign.name}
-                  >
-                    <ZodiacIcon sign={sign.name} className="h-6 w-6" />
-                    <span className="font-sans-ui text-[10px] uppercase tracking-[0.14em]">
-                      {sign.name.slice(0, 3)}
-                    </span>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <span className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                  moon phase
+                </span>
+                <span className="font-serif-display italic text-sm text-foreground capitalize">
+                  {reading.moonPhase}
+                </span>
+              </div>
+              <div className="mt-4">
+                <MoonPhaseStrip current={reading.moonPhase} />
               </div>
             </div>
           </aside>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 py-12">
+      {/* ── Planetary Weather ─────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-6 pb-20">
+        <div className="flex items-end justify-between gap-6 flex-wrap mb-8">
+          <div>
+            <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+              live transits
+            </p>
+            <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-2">
+              Planetary weather
+            </h2>
+            <p className="font-serif-display italic text-muted-foreground mt-2">
+              How the current sky is touching <span className="text-foreground">{selectedSign}</span>.
+            </p>
+          </div>
+          {transits?.generatedAt ? (
+            <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+              updated {new Date(transits.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </p>
+          ) : null}
+        </div>
+
         <TransitSection
-          selectedSign={reading.sign.name}
           response={transits}
           status={transitStatus}
           locationStatus={locationStatus}
         />
       </section>
     </main>
+  );
+}
+
+function HeroStat({
+  icon,
+  label,
+  value,
+  className = "",
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  className?: string;
+}) {
+  return (
+    <div className={`flex items-center gap-2.5 ${className}`}>
+      <span className="text-accent">{icon}</span>
+      <div className="text-left">
+        <p className="font-sans-ui text-[9px] uppercase tracking-[0.22em] text-muted-foreground">
+          {label}
+        </p>
+        <p className="font-serif-display italic text-foreground capitalize text-sm leading-tight">
+          {value}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -502,52 +550,29 @@ function ConstellationBackdrop() {
 
 function MoonPhaseStrip({ current }: { current: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-card/55 p-4">
-      <div className="flex items-center justify-between gap-3">
-        {moonPhases.map((phase) => {
-          const active = phase === current;
-
-          return (
-            <div key={phase} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-              <span
-                className={`h-3 w-3 rounded-full border ${
-                  active ? "border-accent bg-accent shadow-lg" : "border-border bg-muted"
-                }`}
-                aria-hidden
-              />
-              <span
-                className={`hidden text-center font-sans-ui text-[9px] uppercase tracking-[0.12em] sm:block ${
-                  active ? "text-foreground" : "text-muted-foreground"
-                }`}
-              >
-                {phase.split(" ")[0]}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function ReadingDetail({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card/70 p-4">
-      <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-        {label}
-      </p>
-      <p className="font-serif-display italic text-foreground mt-2 capitalize">{value}</p>
+    <div className="flex items-center justify-between gap-2">
+      {moonPhases.map((phase) => {
+        const active = phase === current;
+        return (
+          <span
+            key={phase}
+            title={phase}
+            className={`h-2.5 flex-1 rounded-full transition-all ${
+              active ? "bg-accent shadow-lg h-3" : "bg-border"
+            }`}
+            aria-hidden
+          />
+        );
+      })}
     </div>
   );
 }
 
 function TransitSection({
-  selectedSign,
   response,
   status,
   locationStatus,
 }: {
-  selectedSign: ZodiacSign;
   response: TransitApiResponse | null;
   status: "idle" | "loading" | "ready" | "error";
   locationStatus: "loading" | "ready" | "error";
@@ -555,149 +580,124 @@ function TransitSection({
   const placements = response?.placements ?? [];
   const overview = response?.overview;
 
+  const message =
+    locationStatus === "loading"
+      ? "Waiting for browser location to calculate the local sky…"
+      : locationStatus === "error"
+      ? "Allow browser location to show planetary placements for your area."
+      : status === "loading"
+      ? "Asking the ephemeris for current placements…"
+      : status === "error"
+      ? "The planetary API is unavailable right now."
+      : status === "ready" && response && !response.configured
+      ? response.error
+      : null;
+
+  if (message) {
+    return (
+      <div className="paper-card p-8 text-center">
+        <Planet weight="duotone" className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+        <p className="font-serif-display italic text-muted-foreground">{message}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="paper-card overflow-hidden">
-      <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="relative p-8 md:p-10 border-b lg:border-b-0 lg:border-r border-border bg-card/70">
-          <div className="absolute right-8 top-8 text-accent/50" aria-hidden>
-            <Planet weight="duotone" className="h-16 w-16" />
+    <div className="space-y-6">
+      {overview ? (
+        <div className="paper-card p-8 md:p-10 relative overflow-hidden">
+          <div className="absolute -left-10 -bottom-10 w-48 h-48 rounded-full bg-primary/10 blur-3xl" aria-hidden />
+          <div className="relative z-10 grid md:grid-cols-[1.3fr_1fr] gap-8">
+            <div>
+              <span className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                right now
+              </span>
+              <h3 className="font-hand text-4xl md:text-5xl text-foreground mt-2">
+                {overview.headline}
+              </h3>
+              <p className="font-serif-display italic text-lg leading-relaxed text-foreground/85 mt-5">
+                {overview.summary}
+              </p>
+            </div>
+            <div className="space-y-4">
+              <OverviewBlock label="advice" body={overview.advice} accent />
+              <OverviewBlock label="watch for" body={overview.watchFor} />
+            </div>
           </div>
-          <span className="tag-chip gold">current sky</span>
-          <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-4">
-            Planetary weather for {selectedSign}
-          </h2>
-          <p className="font-serif-display italic text-muted-foreground mt-5 leading-relaxed">
-            This section is supplied by the server API. Planet positions, signs, degrees, houses,
-            and selected-sign meanings come from `/api/astrology-transits`.
-          </p>
-          <div className="mt-8 rounded-2xl border border-border bg-background/45 p-5">
-            <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-              source
-            </p>
-            <p className="font-serif-display italic text-foreground mt-2">
-              {response?.source ?? "waiting for provider"}
-            </p>
-            {response?.generatedAt ? (
-              <p className="font-serif-display italic text-xs text-muted-foreground mt-2">
-                Updated {new Date(response.generatedAt).toLocaleString()}
-              </p>
-            ) : null}
-          </div>
-        </div>
 
-        <div className="p-6 md:p-8">
-          {locationStatus === "loading" ? (
-            <p className="font-serif-display italic text-muted-foreground">
-              Waiting for browser location to calculate the local sky...
-            </p>
-          ) : null}
-
-          {locationStatus === "error" ? (
-            <div className="rounded-2xl border border-border bg-muted/50 p-5">
-              <p className="font-serif-display italic text-muted-foreground">
-                Browser location is needed to calculate the current local sky. Allow location access
-                to show planetary placements for your area.
-              </p>
-            </div>
-          ) : null}
-
-          {status === "loading" ? (
-            <p className="font-serif-display italic text-muted-foreground">
-              Asking the ephemeris for the current placements...
-            </p>
-          ) : null}
-
-          {status === "error" ? (
-            <p className="font-serif-display italic text-muted-foreground">
-              The planetary API is unavailable right now.
-            </p>
-          ) : null}
-
-          {status === "ready" && response && !response.configured ? (
-            <div className="rounded-2xl border border-border bg-muted/50 p-5">
-              <p className="font-serif-display italic text-muted-foreground">
-                {response.error}
-              </p>
-            </div>
-          ) : null}
-
-          {overview ? (
-            <div className="space-y-5">
-              <div className="rounded-[1.5rem] border border-border bg-background/45 p-6">
-                <span className="tag-chip rose">right now</span>
-                <h3 className="font-hand text-4xl text-foreground mt-3">{overview.headline}</h3>
-                <p className="font-serif-display italic text-lg leading-relaxed text-foreground/85 mt-4">
-                  {overview.summary}
-                </p>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-border bg-card/70 p-5">
-                  <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                    advice
-                  </p>
-                  <p className="font-serif-display italic text-foreground/85 leading-relaxed mt-3">
-                    {overview.advice}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-border bg-card/70 p-5">
-                  <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                    watch for
-                  </p>
-                  <p className="font-serif-display italic text-foreground/85 leading-relaxed mt-3">
-                    {overview.watchFor}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-card/70 p-5">
-                <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                  main themes
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {overview.focusAreas.map((area) => (
-                    <span
-                      key={area}
-                      className="rounded-full border border-border bg-background/50 px-3 py-1 font-serif-display italic text-sm text-muted-foreground"
-                    >
-                      {area}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          {placements.length ? (
-            <div className="grid md:grid-cols-2 gap-4 mt-6">
-              {placements.map((placement) => (
-                <article key={placement.planet} className="rounded-2xl border border-border bg-card/70 p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-hand text-3xl text-foreground">{placement.planet}</p>
-                      <p className="font-serif-display italic text-muted-foreground mt-1">
-                        {placement.degree} deg {placement.sign}
-                        {placement.retrograde ? " retrograde" : ""}
-                      </p>
-                    </div>
-                    <div className="grid h-12 w-12 place-items-center rounded-full bg-secondary/35 text-forest dark:text-foreground">
-                      <ZodiacIcon sign={placement.sign} className="h-6 w-6" />
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center gap-2">
-                    <span className="rounded-full border border-border px-3 py-1 font-sans-ui text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                      {placement.houseLabel} house
-                    </span>
-                  </div>
-                  <p className="font-serif-display italic text-foreground/85 leading-relaxed mt-4">
-                    {placement.meaning}
-                  </p>
-                </article>
+          {overview.focusAreas.length ? (
+            <div className="relative z-10 mt-8 pt-6 border-t border-border flex flex-wrap items-center gap-3">
+              <span className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                themes
+              </span>
+              {overview.focusAreas.map((area) => (
+                <span
+                  key={area}
+                  className="font-serif-display italic text-sm text-foreground/80 inline-flex items-center gap-1.5"
+                >
+                  <ArrowRight weight="bold" className="w-3 h-3 text-accent" />
+                  {area}
+                </span>
               ))}
             </div>
           ) : null}
         </div>
-      </div>
+      ) : null}
+
+      {placements.length ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {placements.map((placement) => (
+            <article
+              key={placement.planet}
+              className="paper-card p-5 hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-hand text-2xl text-foreground">{placement.planet}</p>
+                  <p className="font-serif-display italic text-sm text-muted-foreground mt-0.5">
+                    {placement.degree}° {placement.sign}
+                    {placement.retrograde ? " ℞" : ""}
+                  </p>
+                </div>
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-secondary/40 text-forest dark:text-foreground shrink-0">
+                  <ZodiacIcon sign={placement.sign} className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="mt-3">
+                <span className="inline-block font-sans-ui text-[9px] uppercase tracking-[0.18em] text-muted-foreground border border-border rounded-full px-2.5 py-0.5">
+                  {placement.houseLabel} house
+                </span>
+              </div>
+              <p className="font-serif-display italic text-sm text-foreground/80 leading-relaxed mt-4">
+                {placement.meaning}
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : null}
+
+      {response?.source ? (
+        <p className="text-center font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground pt-4">
+          Source · {response.source}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function OverviewBlock({ label, body, accent = false }: { label: string; body: string; accent?: boolean }) {
+  return (
+    <div
+      className={`rounded-2xl border p-4 ${
+        accent ? "border-accent/40 bg-accent/10" : "border-border bg-card/60"
+      }`}
+    >
+      <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="font-serif-display italic text-foreground/85 leading-relaxed mt-2 text-sm">
+        {body}
+      </p>
     </div>
   );
 }
@@ -834,15 +834,3 @@ const zodiacPaths: Record<ZodiacSign, ReactNode> = {
     </>
   ),
 };
-
-function SkyStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="paper-card p-5">
-      <div className="flex items-center gap-2 text-primary">
-        {icon}
-        <span className="font-sans-ui text-[11px] uppercase tracking-[0.22em]">{label}</span>
-      </div>
-      <p className="font-serif-display italic text-lg text-foreground mt-3 capitalize">{value}</p>
-    </div>
-  );
-}
