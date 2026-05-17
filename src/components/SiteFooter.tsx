@@ -13,8 +13,8 @@ export function SiteFooter() {
         </div>
         <nav className="font-serif-display italic text-sm text-muted-foreground flex flex-col gap-2 md:items-center">
           <Link to="/journal" className="hover:text-primary">Journal</Link>
-          <Link to="/astrology" className="hover:text-primary">Astrology</Link>
           <Link to="/gallery" className="hover:text-primary">Gallery</Link>
+          <Link to="/astrology" className="hover:text-primary">Astrology</Link>
           <Link to="/about" className="hover:text-primary">About</Link>
         </nav>
         <div className="md:text-right">

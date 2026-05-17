@@ -2,7 +2,8 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { ChatText, MagnifyingGlass, PencilLine } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 
-import { journalPosts, recentJournal } from "@/lib/blog-data";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatJournalDate, getJournalTagLabel, type SubstackFeed } from "@/lib/substack";
 
 export const Route = createFileRoute("/journal")({
   head: () => ({
@@ -22,33 +23,10 @@ export const Route = createFileRoute("/journal")({
   component: JournalPage,
 });
 
-type SubstackFeed = {
-  configured: boolean;
-  publication: {
-    name: string;
-    subdomain: string;
-    heroText?: string;
-    authorPhotoUrl?: string;
-  } | null;
-  items: Array<{
-    id: string;
-    title: string;
-    slug: string;
-    url: string;
-    excerpt: string;
-    imageUrl?: string;
-    publishedAt: string;
-    read: string;
-    tags: string[];
-    reactionCount: number;
-    commentCount: number;
-  }>;
-  error?: string;
-};
-
 function JournalPage() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const [substack, setSubstack] = useState<SubstackFeed | null>(null);
+  const [substack, setSubstack] = useState<SubstackFeed>();
+  const [substackError, setSubstackError] = useState<string>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -66,7 +44,7 @@ function JournalPage() {
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error(error);
-        setSubstack(null);
+        setSubstackError("Journal posts are unavailable right now.");
       }
     }
 
@@ -76,8 +54,8 @@ function JournalPage() {
   }, []);
 
   const livePosts = substack?.items ?? [];
-  const posts = livePosts.length ? livePosts : null;
-  const sidebarItems = useMemo(() => posts?.slice(0, 4) ?? null, [posts]);
+  const sidebarItems = useMemo(() => livePosts.slice(0, 4), [livePosts]);
+  const substackLoading = substack === undefined && !substackError;
 
   if (pathname !== "/journal") {
     return <Outlet />;
@@ -108,8 +86,9 @@ function JournalPage() {
       <div className="grid lg:grid-cols-3 gap-10 mt-16">
         {/* Posts list */}
         <div className="lg:col-span-2 space-y-8">
-          {posts
-            ? posts.map((post) => (
+          {substackLoading
+            ? Array.from({ length: 5 }, (_, index) => <JournalPostSkeleton key={index} />)
+            : livePosts.map((post) => (
                 <article
                   key={post.id}
                   className="paper-card overflow-hidden grid sm:grid-cols-[200px_1fr]"
@@ -128,7 +107,10 @@ function JournalPage() {
                   </div>
                   <div className="p-6 flex flex-col">
                     <span className="tag-chip rose">
-                      {post.tags[0] ?? substack?.publication?.name ?? "Substack"}
+                      {getJournalTagLabel(
+                        post.title,
+                        post.tags[0] ?? substack?.publication?.name ?? "Substack",
+                      )}
                     </span>
                     <h2 className="font-hand text-3xl text-foreground mt-2 leading-tight">
                       {post.title}
@@ -138,7 +120,7 @@ function JournalPage() {
                     </p>
                     <div className="flex items-center justify-between mt-4">
                       <span className="font-serif-display italic text-sm text-muted-foreground">
-                        {formatDate(post.publishedAt)} · {post.read}
+                        {formatJournalDate(post.publishedAt)} · {post.read}
                       </span>
                       <a
                         href={post.url}
@@ -151,43 +133,14 @@ function JournalPage() {
                     </div>
                   </div>
                 </article>
-              ))
-            : journalPosts.map((post) => (
-                <article
-                  key={post.slug}
-                  className="paper-card overflow-hidden grid sm:grid-cols-[200px_1fr]"
-                >
-                  <div className="relative h-48 sm:h-full overflow-hidden">
-                    <img
-                      src={post.image}
-                      alt=""
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-6 flex flex-col">
-                    <span className={`tag-chip ${post.chip}`}>{post.tag}</span>
-                    <h2 className="font-hand text-3xl text-foreground mt-2 leading-tight">
-                      {post.title}
-                    </h2>
-                    <p className="font-serif-display italic text-muted-foreground mt-2 flex-1">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="font-serif-display italic text-sm text-muted-foreground">
-                        {post.date} · {post.read}
-                      </span>
-                      <Link
-                        to="/journal/$slug"
-                        params={{ slug: post.slug }}
-                        className="inline-flex items-center gap-2 text-primary font-serif-display italic text-sm hover:gap-3 transition-all"
-                      >
-                        read entry <PencilLine weight="duotone" className="w-3 h-3" />
-                      </Link>
-                    </div>
-                  </div>
-                </article>
               ))}
+          {!substackLoading && !livePosts.length ? (
+            <div className="paper-card p-8 text-center">
+              <p className="font-serif-display italic text-muted-foreground">
+                {substackError ?? "No journal posts are available right now."}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         {/* Sidebar */}
@@ -195,8 +148,9 @@ function JournalPage() {
           <div className="paper-card p-6">
             <span className="tag-chip">recent journal</span>
             <ul className="mt-4 divide-y divide-border">
-              {sidebarItems
-                ? sidebarItems.map((j) => (
+              {substackLoading
+                ? Array.from({ length: 4 }, (_, index) => <RecentJournalSkeleton key={index} />)
+                : sidebarItems.map((j) => (
                     <li key={j.id} className="py-3">
                       <a
                         href={j.url}
@@ -205,28 +159,12 @@ function JournalPage() {
                         className="flex items-start gap-4 group"
                       >
                         <span className="font-hand text-2xl text-accent w-14 shrink-0">
-                          {formatShortDate(j.publishedAt)}
+                          {formatJournalDate(j.publishedAt, false)}
                         </span>
                         <span className="font-serif-display text-foreground/85 group-hover:text-primary transition-colors">
                           {j.title}
                         </span>
                       </a>
-                    </li>
-                  ))
-                : recentJournal.map((j, i) => (
-                    <li key={i} className="py-3">
-                      <Link
-                        to="/journal/$slug"
-                        params={{ slug: j.slug }}
-                        className="flex items-start gap-4 group"
-                      >
-                        <span className="font-hand text-2xl text-accent w-14 shrink-0">
-                          {j.date}
-                        </span>
-                        <span className="font-serif-display text-foreground/85 group-hover:text-primary transition-colors">
-                          {j.title}
-                        </span>
-                      </Link>
                     </li>
                   ))}
             </ul>
@@ -270,25 +208,36 @@ function JournalPage() {
   );
 }
 
-function formatDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
+function JournalPostSkeleton() {
+  return (
+    <article className="paper-card overflow-hidden grid sm:grid-cols-[200px_1fr]">
+      <Skeleton className="h-48 sm:h-full min-h-48 rounded-none" />
+      <div className="p-6 flex flex-col">
+        <Skeleton className="h-6 w-24 rounded-full" />
+        <Skeleton className="h-8 w-4/5 mt-4" />
+        <Skeleton className="h-4 w-full mt-4" />
+        <Skeleton className="h-4 w-2/3 mt-2" />
+        <div className="flex items-center justify-between gap-4 mt-6">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      </div>
+    </article>
+  );
 }
 
-function formatShortDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-  }).format(date);
+function RecentJournalSkeleton() {
+  return (
+    <li className="py-3">
+      <div className="flex items-start gap-4">
+        <Skeleton className="h-7 w-14 shrink-0" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </div>
+    </li>
+  );
 }
 
 function CurrentlyLoving({ label, item, by }: { label: string; item: string; by: string }) {
