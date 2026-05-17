@@ -143,8 +143,8 @@ function hash(value: string) {
   return Array.from(value).reduce((total, char) => total + char.charCodeAt(0), 0);
 }
 
-function pick<T>(items: T[], seed: number, offset = 0) {
-  return items[(seed + offset) % items.length];
+function pick<T>(items: readonly T[], seed: number, offset = 0): T {
+  return items[(seed + offset) % items.length] as T;
 }
 
 function buildReading(selectedSign?: string) {
