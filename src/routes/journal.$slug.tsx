@@ -104,7 +104,7 @@ function JournalEntryPage() {
           </Link>
         </div>
         <div className="grid md:grid-cols-3 gap-6 mt-8">
-          {related.map((entry) => (
+          {related.map((entry: (typeof journalPosts)[number]) => (
             <Link key={entry.slug} to="/journal/$slug" params={{ slug: entry.slug }} className="paper-card overflow-hidden group">
               <img src={entry.image} alt="" loading="lazy" className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="p-5">
