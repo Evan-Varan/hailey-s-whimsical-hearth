@@ -83,7 +83,7 @@ function JournalEntryPage() {
         <div className="grid lg:grid-cols-[1fr_220px] gap-10 mt-12 items-start">
           <div className="font-serif-display text-xl leading-relaxed text-foreground/85 space-y-6">
             <p className="italic text-2xl text-muted-foreground leading-relaxed">{post.excerpt}</p>
-            {post.body.map((paragraph) => (
+            {post.body.map((paragraph: string) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
