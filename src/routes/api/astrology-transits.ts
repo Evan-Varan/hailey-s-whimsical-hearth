@@ -141,9 +141,9 @@ export const Route = createFileRoute("/api/astrology-transits")({
           }
 
           const selected = titleCase(selectedSign);
-          const placements = payload.output
+          const placements: Placement[] = payload.output
             .map(mapPlanet)
-            .filter((planet) => planet && trackedPlanets.has(planet.planet))
+            .filter((planet): planet is NonNullable<ReturnType<typeof mapPlanet>> => planet !== null && trackedPlanets.has(planet.planet))
             .map((planet) => {
               const house = houseFromSelectedSign(selected, planet.sign);
               return {
