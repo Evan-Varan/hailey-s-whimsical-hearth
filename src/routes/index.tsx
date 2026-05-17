@@ -94,7 +94,9 @@ function Home() {
 
     const interval = window.setInterval(() => {
       setHeroImageQueue((currentQueue) => {
-        const queue = currentQueue.length ? currentQueue : getShuffledImageQueue(instagramImages.length);
+        const queue = currentQueue.length
+          ? currentQueue
+          : getShuffledImageQueue(instagramImages.length);
         const [nextIndex, ...remainingQueue] = queue;
 
         setHeroImageIndex(nextIndex ?? 0);
@@ -229,7 +231,7 @@ function Home() {
           <WanderCard
             to="/astrology"
             title="Astrology"
-            note="a daily map for the mood of the sky"
+            note="daily readings, moon notes, rituals, and live transits"
             icon={<Planet weight="duotone" className="w-5 h-5" />}
           />
           <WanderCard
@@ -331,13 +333,13 @@ function AstrologyPreviewCard() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <span className="tag-chip gold">astrology</span>
-          <h3 className="font-hand text-4xl text-foreground mt-3">Today's sky</h3>
+          <h3 className="font-hand text-4xl text-foreground mt-3">Daily astrology</h3>
         </div>
         <Planet weight="duotone" className="h-8 w-8 text-primary" />
       </div>
 
       <div className="mt-8 grid grid-cols-3 gap-3">
-        {["Sun", "Moon", "Rising", "Venus", "Mars", "Mercury"].map((label) => (
+        {["Sign", "Moon", "Ritual", "Focus", "Transits", "Forecast"].map((label) => (
           <div key={label} className="rounded-xl border border-border bg-card/70 p-3 text-center">
             <p className="font-sans-ui text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               {label}
@@ -348,7 +350,8 @@ function AstrologyPreviewCard() {
       </div>
 
       <p className="font-serif-display italic text-muted-foreground mt-6">
-        Check the daily mood, transits, and sign notes when you want a quick read on the day.
+        Pick your zodiac sign for a daily horoscope, moon phase, focus themes, small ritual, and
+        live planetary weather for the current sky.
       </p>
       <span className="mt-5 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm group-hover:gap-3 transition-all">
         read the forecast <ArrowRight weight="bold" className="w-3 h-3" />

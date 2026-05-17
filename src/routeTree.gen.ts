@@ -9,19 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as AstrologyRouteImport } from './routes/astrology'
+import { Route as AnimalFactsRouteImport } from './routes/animal-facts'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JournalSlugRouteImport } from './routes/journal.$slug'
 import { Route as ApiSubstackRouteImport } from './routes/api/substack'
+import { Route as ApiPinterestRouteImport } from './routes/api/pinterest'
 import { Route as ApiInstagramRouteImport } from './routes/api/instagram'
 import { Route as ApiHoroscopeRouteImport } from './routes/api/horoscope'
+import { Route as ApiFunFactRouteImport } from './routes/api/fun-fact'
 import { Route as ApiAstrologyTransitsRouteImport } from './routes/api/astrology-transits'
+import { Route as ApiAnimalFactRouteImport } from './routes/api/animal-fact'
 import { Route as ApiSpotifyTopTracksRouteImport } from './routes/api/spotify/top-tracks'
 import { Route as ApiSpotifyNowPlayingRouteImport } from './routes/api/spotify/now-playing'
 
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JournalRoute = JournalRouteImport.update({
   id: '/journal',
   path: '/journal',
@@ -35,6 +45,11 @@ const GalleryRoute = GalleryRouteImport.update({
 const AstrologyRoute = AstrologyRouteImport.update({
   id: '/astrology',
   path: '/astrology',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnimalFactsRoute = AnimalFactsRouteImport.update({
+  id: '/animal-facts',
+  path: '/animal-facts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -57,6 +72,11 @@ const ApiSubstackRoute = ApiSubstackRouteImport.update({
   path: '/api/substack',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPinterestRoute = ApiPinterestRouteImport.update({
+  id: '/api/pinterest',
+  path: '/api/pinterest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInstagramRoute = ApiInstagramRouteImport.update({
   id: '/api/instagram',
   path: '/api/instagram',
@@ -67,9 +87,19 @@ const ApiHoroscopeRoute = ApiHoroscopeRouteImport.update({
   path: '/api/horoscope',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFunFactRoute = ApiFunFactRouteImport.update({
+  id: '/api/fun-fact',
+  path: '/api/fun-fact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAstrologyTransitsRoute = ApiAstrologyTransitsRouteImport.update({
   id: '/api/astrology-transits',
   path: '/api/astrology-transits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAnimalFactRoute = ApiAnimalFactRouteImport.update({
+  id: '/api/animal-fact',
+  path: '/api/animal-fact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSpotifyTopTracksRoute = ApiSpotifyTopTracksRouteImport.update({
@@ -86,12 +116,17 @@ const ApiSpotifyNowPlayingRoute = ApiSpotifyNowPlayingRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/animal-facts': typeof AnimalFactsRoute
   '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
   '/journal': typeof JournalRouteWithChildren
+  '/privacy': typeof PrivacyRoute
+  '/api/animal-fact': typeof ApiAnimalFactRoute
   '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
   '/api/instagram': typeof ApiInstagramRoute
+  '/api/pinterest': typeof ApiPinterestRoute
   '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
@@ -100,12 +135,17 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/animal-facts': typeof AnimalFactsRoute
   '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
   '/journal': typeof JournalRouteWithChildren
+  '/privacy': typeof PrivacyRoute
+  '/api/animal-fact': typeof ApiAnimalFactRoute
   '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
   '/api/instagram': typeof ApiInstagramRoute
+  '/api/pinterest': typeof ApiPinterestRoute
   '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
@@ -115,12 +155,17 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/animal-facts': typeof AnimalFactsRoute
   '/astrology': typeof AstrologyRoute
   '/gallery': typeof GalleryRoute
   '/journal': typeof JournalRouteWithChildren
+  '/privacy': typeof PrivacyRoute
+  '/api/animal-fact': typeof ApiAnimalFactRoute
   '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
   '/api/instagram': typeof ApiInstagramRoute
+  '/api/pinterest': typeof ApiPinterestRoute
   '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
@@ -131,12 +176,17 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/animal-facts'
     | '/astrology'
     | '/gallery'
     | '/journal'
+    | '/privacy'
+    | '/api/animal-fact'
     | '/api/astrology-transits'
+    | '/api/fun-fact'
     | '/api/horoscope'
     | '/api/instagram'
+    | '/api/pinterest'
     | '/api/substack'
     | '/journal/$slug'
     | '/api/spotify/now-playing'
@@ -145,12 +195,17 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/animal-facts'
     | '/astrology'
     | '/gallery'
     | '/journal'
+    | '/privacy'
+    | '/api/animal-fact'
     | '/api/astrology-transits'
+    | '/api/fun-fact'
     | '/api/horoscope'
     | '/api/instagram'
+    | '/api/pinterest'
     | '/api/substack'
     | '/journal/$slug'
     | '/api/spotify/now-playing'
@@ -159,12 +214,17 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/animal-facts'
     | '/astrology'
     | '/gallery'
     | '/journal'
+    | '/privacy'
+    | '/api/animal-fact'
     | '/api/astrology-transits'
+    | '/api/fun-fact'
     | '/api/horoscope'
     | '/api/instagram'
+    | '/api/pinterest'
     | '/api/substack'
     | '/journal/$slug'
     | '/api/spotify/now-playing'
@@ -174,12 +234,17 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AnimalFactsRoute: typeof AnimalFactsRoute
   AstrologyRoute: typeof AstrologyRoute
   GalleryRoute: typeof GalleryRoute
   JournalRoute: typeof JournalRouteWithChildren
+  PrivacyRoute: typeof PrivacyRoute
+  ApiAnimalFactRoute: typeof ApiAnimalFactRoute
   ApiAstrologyTransitsRoute: typeof ApiAstrologyTransitsRoute
+  ApiFunFactRoute: typeof ApiFunFactRoute
   ApiHoroscopeRoute: typeof ApiHoroscopeRoute
   ApiInstagramRoute: typeof ApiInstagramRoute
+  ApiPinterestRoute: typeof ApiPinterestRoute
   ApiSubstackRoute: typeof ApiSubstackRoute
   ApiSpotifyNowPlayingRoute: typeof ApiSpotifyNowPlayingRoute
   ApiSpotifyTopTracksRoute: typeof ApiSpotifyTopTracksRoute
@@ -187,6 +252,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/journal': {
       id: '/journal'
       path: '/journal'
@@ -206,6 +278,13 @@ declare module '@tanstack/react-router' {
       path: '/astrology'
       fullPath: '/astrology'
       preLoaderRoute: typeof AstrologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/animal-facts': {
+      id: '/animal-facts'
+      path: '/animal-facts'
+      fullPath: '/animal-facts'
+      preLoaderRoute: typeof AnimalFactsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -236,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSubstackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pinterest': {
+      id: '/api/pinterest'
+      path: '/api/pinterest'
+      fullPath: '/api/pinterest'
+      preLoaderRoute: typeof ApiPinterestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/instagram': {
       id: '/api/instagram'
       path: '/api/instagram'
@@ -250,11 +336,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHoroscopeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/fun-fact': {
+      id: '/api/fun-fact'
+      path: '/api/fun-fact'
+      fullPath: '/api/fun-fact'
+      preLoaderRoute: typeof ApiFunFactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/astrology-transits': {
       id: '/api/astrology-transits'
       path: '/api/astrology-transits'
       fullPath: '/api/astrology-transits'
       preLoaderRoute: typeof ApiAstrologyTransitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/animal-fact': {
+      id: '/api/animal-fact'
+      path: '/api/animal-fact'
+      fullPath: '/api/animal-fact'
+      preLoaderRoute: typeof ApiAnimalFactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/spotify/top-tracks': {
@@ -288,12 +388,17 @@ const JournalRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AnimalFactsRoute: AnimalFactsRoute,
   AstrologyRoute: AstrologyRoute,
   GalleryRoute: GalleryRoute,
   JournalRoute: JournalRouteWithChildren,
+  PrivacyRoute: PrivacyRoute,
+  ApiAnimalFactRoute: ApiAnimalFactRoute,
   ApiAstrologyTransitsRoute: ApiAstrologyTransitsRoute,
+  ApiFunFactRoute: ApiFunFactRoute,
   ApiHoroscopeRoute: ApiHoroscopeRoute,
   ApiInstagramRoute: ApiInstagramRoute,
+  ApiPinterestRoute: ApiPinterestRoute,
   ApiSubstackRoute: ApiSubstackRoute,
   ApiSpotifyNowPlayingRoute: ApiSpotifyNowPlayingRoute,
   ApiSpotifyTopTracksRoute: ApiSpotifyTopTracksRoute,
@@ -301,3 +406,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

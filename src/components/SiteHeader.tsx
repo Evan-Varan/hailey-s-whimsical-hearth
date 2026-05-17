@@ -7,6 +7,7 @@ const navItems = [
   { to: "/journal", label: "Journal" },
   { to: "/gallery", label: "Gallery" },
   { to: "/astrology", label: "Astrology" },
+  { to: "/animal-facts", label: "Facts" },
   { to: "/about", label: "About" },
 ] as const;
 
@@ -33,11 +34,7 @@ export function SiteHeader() {
   return (
     <header className="relative z-30 border-b border-border/60 backdrop-blur-sm bg-background/70 sticky top-0">
       <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between gap-6">
-        <Link
-          to="/"
-          className="group relative shrink-0 py-1 pr-3"
-          aria-label="Hailey Adkins home"
-        >
+        <Link to="/" className="group relative shrink-0 py-1 pr-3" aria-label="Hailey Adkins home">
           <span className="relative inline-flex items-end">
             <span className="font-hand text-[2.05rem] italic leading-[0.85] text-foreground transition-colors group-hover:text-primary">
               Hailey
@@ -71,7 +68,11 @@ export function SiteHeader() {
             onClick={() => setDark((d) => !d)}
             className="p-2 rounded-full hover:bg-muted transition-colors"
           >
-            {dark ? <SunDim weight="duotone" className="w-4 h-4" /> : <Moon weight="duotone" className="w-4 h-4" />}
+            {dark ? (
+              <SunDim weight="duotone" className="w-4 h-4" />
+            ) : (
+              <Moon weight="duotone" className="w-4 h-4" />
+            )}
           </button>
           <button
             aria-label="Menu"

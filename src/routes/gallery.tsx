@@ -5,6 +5,7 @@ import {
   CaretRight,
   InstagramLogo,
   MusicNotes,
+  PinterestLogo,
   VinylRecord,
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
@@ -70,19 +71,35 @@ type SpotifyTopTracks = {
   error?: string;
 };
 
+type PinterestFeed = {
+  configured: boolean;
+  items: Array<{
+    id: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+    link: string;
+    createdAt?: string;
+  }>;
+  error?: string;
+};
+
 function GalleryPage() {
   const [instagram, setInstagram] = useState<InstagramFeed>();
   const [nowPlaying, setNowPlaying] = useState<SpotifyNowPlaying>();
   const [topTracks, setTopTracks] = useState<SpotifyTopTracks>();
+  const [pinterest, setPinterest] = useState<PinterestFeed>();
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadSocialFeeds() {
-      const [instagramResult, nowPlayingResult, topTracksResult] = await Promise.allSettled([
+      const [instagramResult, nowPlayingResult, topTracksResult, pinterestResult] =
+        await Promise.allSettled([
         fetchJson<InstagramFeed>("/api/instagram?view=carousel", controller.signal),
         fetchJson<SpotifyNowPlaying>("/api/spotify/now-playing", controller.signal),
         fetchJson<SpotifyTopTracks>("/api/spotify/top-tracks?limit=5", controller.signal),
+        fetchJson<PinterestFeed>("/api/pinterest?limit=8", controller.signal),
       ]);
 
       if (controller.signal.aborted) return;
@@ -111,6 +128,15 @@ function GalleryPage() {
           configured: true,
           items: [],
           error: "Spotify tracks are unavailable right now.",
+        });
+      }
+
+      if (pinterestResult.status === "fulfilled") setPinterest(pinterestResult.value);
+      else {
+        setPinterest({
+          configured: true,
+          items: [],
+          error: "Pinterest pins are unavailable right now.",
         });
       }
     }
@@ -172,6 +198,8 @@ function GalleryPage() {
 
         <SpotifyPanel nowPlaying={nowPlaying} topTracks={topTracks} />
       </section>
+
+      <PinterestPanel pinterest={pinterest} />
     </main>
   );
 }
@@ -320,6 +348,9 @@ function SpotifyPanel({
         <div>
           <span className="tag-chip gold">spotify</span>
           <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-2">on repeat</h2>
+          <p className="font-serif-display italic text-sm text-muted-foreground mt-1">
+            top tracks from the last 4 weeks
+          </p>
         </div>
         <MusicNotes weight="duotone" className="w-6 h-6 text-primary" aria-hidden />
       </div>
@@ -407,6 +438,87 @@ function SpotifyPanel({
         </p>
       ) : null}
     </aside>
+  );
+}
+
+function PinterestPanel({ pinterest }: { pinterest: PinterestFeed | undefined }) {
+  const loading = pinterest === undefined;
+  const pins = pinterest?.items.filter((pin) => pin.imageUrl) ?? [];
+
+  return (
+    <section className="paper-card p-6 md:p-8 mt-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <span className="tag-chip rose">pinterest</span>
+          <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-2">
+            saved inspiration
+          </h2>
+          <p className="font-serif-display italic text-sm text-muted-foreground mt-1">
+            recent pins from Hailey's Pinterest
+          </p>
+        </div>
+        <PinterestLogo weight="duotone" className="w-6 h-6 text-primary" aria-hidden />
+      </div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+        {loading
+          ? Array.from({ length: 8 }, (_, index) => <PinterestPinSkeleton key={index} />)
+          : pins.map((pin) => (
+              <a
+                key={pin.id}
+                href={pin.link}
+                target="_blank"
+                rel="noreferrer"
+                className="group overflow-hidden rounded-2xl border border-border bg-card/70"
+              >
+                <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                  <img
+                    src={pin.imageUrl}
+                    alt={pin.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <span className="absolute right-2 top-2 rounded-full bg-card/85 p-2 text-foreground backdrop-blur">
+                    <ArrowSquareOut weight="bold" className="h-3.5 w-3.5" />
+                  </span>
+                </div>
+                <div className="p-4">
+                  <p className="line-clamp-2 font-serif-display italic text-foreground">
+                    {pin.title}
+                  </p>
+                  {pin.description ? (
+                    <p className="line-clamp-2 font-serif-display italic text-sm text-muted-foreground mt-2">
+                      {pin.description}
+                    </p>
+                  ) : null}
+                </div>
+              </a>
+            ))}
+      </div>
+
+      {!loading && !pinterest?.configured ? (
+        <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
+          Add Pinterest credentials to show recent pins here.
+        </p>
+      ) : null}
+      {!loading && pinterest?.configured && !pins.length ? (
+        <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
+          {pinterest.error ?? "No Pinterest pins are available right now."}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function PinterestPinSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card/70">
+      <Skeleton className="aspect-[3/4] rounded-none" />
+      <div className="space-y-2 p-4">
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    </div>
   );
 }
 

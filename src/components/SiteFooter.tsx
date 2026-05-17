@@ -12,17 +12,48 @@ export function SiteFooter() {
           </p>
         </div>
         <nav className="font-serif-display italic text-sm text-muted-foreground flex flex-col gap-2 md:items-center">
-          <Link to="/journal" className="hover:text-primary">Journal</Link>
-          <Link to="/gallery" className="hover:text-primary">Gallery</Link>
-          <Link to="/astrology" className="hover:text-primary">Astrology</Link>
-          <Link to="/about" className="hover:text-primary">About</Link>
+          <Link to="/journal" className="hover:text-primary">
+            Journal
+          </Link>
+          <Link to="/gallery" className="hover:text-primary">
+            Gallery
+          </Link>
+          <Link to="/astrology" className="hover:text-primary">
+            Astrology
+          </Link>
+          <Link to="/animal-facts" className="hover:text-primary">
+            Facts
+          </Link>
+          <Link to="/about" className="hover:text-primary">
+            About
+          </Link>
         </nav>
         <div className="md:text-right">
-          <p className="font-sans-ui text-[11px] uppercase tracking-[0.25em] text-muted-foreground">find me</p>
+          <p className="font-sans-ui text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+            find me
+          </p>
           <div className="flex md:justify-end items-center gap-2 mt-3">
-            <a href="#" aria-label="Instagram" className="p-2 rounded-full hover:bg-muted transition-colors"><InstagramLogo weight="duotone" className="w-4 h-4" /></a>
-            <a href="#" aria-label="Email" className="p-2 rounded-full hover:bg-muted transition-colors"><Envelope weight="duotone" className="w-4 h-4" /></a>
-            <a href="#" aria-label="Pinterest" className="p-2 rounded-full hover:bg-muted transition-colors"><PinterestLogo weight="duotone" className="w-4 h-4" /></a>
+            <a
+              href="#"
+              aria-label="Instagram"
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+            >
+              <InstagramLogo weight="duotone" className="w-4 h-4" />
+            </a>
+            <a
+              href="#"
+              aria-label="Email"
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+            >
+              <Envelope weight="duotone" className="w-4 h-4" />
+            </a>
+            <a
+              href="#"
+              aria-label="Pinterest"
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+            >
+              <PinterestLogo weight="duotone" className="w-4 h-4" />
+            </a>
           </div>
           <p className="font-serif-display italic text-xs text-muted-foreground mt-6">
             © {new Date().getFullYear()} ✦ all small magic reserved

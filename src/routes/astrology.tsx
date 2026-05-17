@@ -331,9 +331,9 @@ function AstrologyPage() {
       </section>
 
       {/* ── Sign Selector (primary control) ───────────────── */}
-      <section className="sticky top-[64px] z-30 bg-background/85 backdrop-blur-md border-y border-border/70">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4 mb-3 px-2">
+      <section className="sticky top-[64px] z-30 border-y border-border/70 bg-background/90 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
             <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
               choose your sign
             </p>
@@ -341,7 +341,8 @@ function AstrologyPage() {
               showing <span className="text-foreground">{selectedSign}</span>
             </p>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-thin">
+
+          <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
             {signs.map((sign) => {
               const active = sign.name === selectedSign;
               return (
@@ -350,28 +351,17 @@ function AstrologyPage() {
                   key={sign.name}
                   onClick={() => handleSelectSign(sign.name)}
                   aria-pressed={active}
-                  className={`group flex-shrink-0 snap-start flex flex-col items-center gap-1.5 rounded-2xl border px-4 py-3 min-w-[88px] transition-all duration-300 ${
+                  className={`group flex items-center gap-2 rounded-xl border px-3 py-2 text-left transition-colors ${
                     active
-                      ? "border-primary bg-primary/10 shadow-[var(--shadow-soft)] -translate-y-0.5"
-                      : "border-border bg-card/50 hover:border-primary/50 hover:bg-card hover:-translate-y-0.5"
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-card/60 text-muted-foreground hover:border-primary/50 hover:bg-card hover:text-foreground"
                   }`}
                 >
                   <ZodiacIcon
                     sign={sign.name}
-                    className={`h-7 w-7 transition-colors ${
-                      active ? "text-primary" : "text-foreground/70 group-hover:text-foreground"
-                    }`}
+                    className={`h-5 w-5 shrink-0 ${active ? "text-primary" : "text-foreground/60"}`}
                   />
-                  <span
-                    className={`font-serif-display text-sm ${
-                      active ? "text-foreground italic" : "text-muted-foreground"
-                    }`}
-                  >
-                    {sign.name}
-                  </span>
-                  <span className="font-sans-ui text-[9px] uppercase tracking-[0.14em] text-muted-foreground/70">
-                    {sign.dates.split(" – ")[0]}
-                  </span>
+                  <span className="font-serif-display italic text-sm">{sign.name}</span>
                 </button>
               );
             })}
@@ -550,22 +540,47 @@ function ConstellationBackdrop() {
 
 function MoonPhaseStrip({ current }: { current: string }) {
   return (
-    <div className="flex items-center justify-between gap-2">
-      {moonPhases.map((phase) => {
-        const active = phase === current;
-        return (
-          <span
-            key={phase}
-            title={phase}
-            className={`h-2.5 flex-1 rounded-full transition-all ${
-              active ? "bg-accent shadow-lg h-3" : "bg-border"
-            }`}
-            aria-hidden
-          />
-        );
-      })}
+    <div className="rounded-2xl border border-border bg-background/60 p-5">
+      <div className="flex items-center gap-4">
+        <div className="grid h-20 w-20 shrink-0 place-items-center rounded-full border border-accent/35 bg-accent/10 text-4xl text-accent shadow-[0_0_32px_hsl(var(--accent)/0.18)]">
+          <span aria-hidden>{getMoonPhaseGlyph(current)}</span>
+        </div>
+        <div>
+          <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            current phase
+          </p>
+          <p className="font-hand text-4xl text-foreground capitalize mt-1">{current}</p>
+        </div>
+      </div>
+      <p className="font-serif-display italic text-sm text-muted-foreground mt-4 leading-relaxed">
+        A quiet marker for the day’s rhythm: notice what is beginning, building, peaking, or
+        ready to be released.
+      </p>
     </div>
   );
+}
+
+function getMoonPhaseGlyph(phase: string) {
+  switch (phase) {
+    case "new moon":
+      return "●";
+    case "waxing crescent":
+      return "☽";
+    case "first quarter":
+      return "◐";
+    case "waxing gibbous":
+      return "◖";
+    case "full moon":
+      return "○";
+    case "waning gibbous":
+      return "◗";
+    case "last quarter":
+      return "◑";
+    case "waning crescent":
+      return "☾";
+    default:
+      return "○";
+  }
 }
 
 function TransitSection({
