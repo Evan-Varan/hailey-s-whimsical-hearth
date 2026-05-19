@@ -317,7 +317,7 @@ function AstrologyPage() {
         </p>
 
         <div className="mt-16 max-w-3xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 items-start">
             <HeroStat icon={<MoonStars weight="duotone" />} label="Moon phase" value={reading.moonPhase} />
             <HeroStat icon={<SunDim weight="duotone" />} label="Solar focus" value={reading.house} />
             <HeroStat
@@ -350,12 +350,12 @@ function AstrologyPage() {
                   className={`group flex min-h-14 items-center justify-center gap-2 rounded-sm border px-3 py-2 transition-colors ${
                     active
                       ? "border-primary bg-primary/10 text-foreground shadow-ink"
-                      : "border-border/40 bg-card/30 text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5"
+                      : "border-border/60 bg-card/45 text-foreground hover:border-primary/50 hover:text-primary hover:bg-primary/5"
                   }`}
                 >
                   <ZodiacIcon
                     sign={sign.name}
-                    className={`h-5 w-5 shrink-0 ${active ? "text-primary scale-110" : "text-foreground/40"}`}
+                    className={`h-5 w-5 shrink-0 ${active ? "text-primary scale-110" : "text-primary/60"}`}
                   />
                   <span className="font-display italic text-base sm:text-lg leading-none">{sign.name}</span>
                 </button>
@@ -484,10 +484,10 @@ function HeroStat({
   className?: string;
 }) {
   return (
-    <div className={`flex flex-col items-center md:items-start gap-2 ${className}`}>
-      <span className="text-primary/40 mb-1">{icon}</span>
-      <p className="font-marginalia text-primary/70 text-sm tracking-widest uppercase">{label}</p>
-      <p className="font-display italic text-2xl text-foreground capitalize leading-tight">
+    <div className={`flex min-h-32 flex-col items-center md:items-start gap-2 text-center md:text-left ${className}`}>
+      <span className="grid h-7 place-items-center text-primary/40">{icon}</span>
+      <p className="min-h-4 font-marginalia text-primary/70 text-sm tracking-widest uppercase leading-none">{label}</p>
+      <p className="min-h-14 max-w-48 font-display italic text-2xl text-foreground capitalize leading-tight">
         {value}
       </p>
     </div>

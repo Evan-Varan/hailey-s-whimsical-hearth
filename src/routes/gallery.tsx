@@ -472,7 +472,9 @@ function SpotifyPanel({
                   rel="noreferrer"
                   className="flex items-center gap-5 group"
                 >
-                  <span className="font-marginalia text-3xl text-primary/20 w-8 shrink-0">{index + 1}</span>
+                  <span className="font-marginalia text-3xl text-gold w-8 shrink-0">
+                    {index + 1}
+                  </span>
                   <div className="w-14 h-14 paper-card p-0.5 shrink-0 rotate-1">
                     <img src={track.imageUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   </div>
@@ -512,7 +514,7 @@ function RecentSpotifyPanel({
         <TopTracksSkeleton />
       ) : (
         <ol className="space-y-8">
-          {tracks.map((track) => (
+          {tracks.map((track, index) => (
             <li key={track.id ?? track.spotifyUrl}>
               <a
                 href={track.spotifyUrl}
@@ -520,6 +522,9 @@ function RecentSpotifyPanel({
                 rel="noreferrer"
                 className="flex items-center gap-5 group"
               >
+                <span className="font-marginalia text-3xl text-primary/60 w-8 shrink-0">
+                  {index + 1}
+                </span>
                 <div className="w-14 h-14 paper-card p-0.5 shrink-0 rotate-1">
                   {track.imageUrl ? (
                     <img src={track.imageUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />

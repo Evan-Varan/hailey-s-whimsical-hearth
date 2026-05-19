@@ -73,7 +73,7 @@
   --secondary-foreground: oklch(0.3 0.05 40);
 
   --muted: oklch(0.92 0.02 85);
-  --muted-foreground: oklch(0.44 0.03 120);
+  --muted-foreground: oklch(0.36 0.035 125);
 
   /* Soft gold accent */
   --accent: oklch(0.84 0.09 85);
@@ -87,10 +87,10 @@
   --ring: oklch(0.55 0.06 150);
 
   /* Named tokens */
-  --rose: oklch(0.78 0.07 20);
+  --rose: oklch(0.52 0.08 20);
   --sage: oklch(0.74 0.05 145);
   --forest: oklch(0.32 0.06 150);
-  --gold: oklch(0.75 0.1 80);
+  --gold: oklch(0.5 0.1 80);
   --cream: oklch(0.96 0.02 85);
 
   --shadow-soft: 2px 4px 16px -4px oklch(0.2 0.04 150 / 0.12);
@@ -116,7 +116,7 @@
   --secondary-foreground: oklch(0.98 0.02 45);
 
   --muted: oklch(0.25 0.03 260);
-  --muted-foreground: oklch(0.7 0.02 260);
+  --muted-foreground: oklch(0.78 0.02 260);
 
   --accent: oklch(0.8 0.1 85);
   --accent-foreground: oklch(0.2 0.03 260);
@@ -128,10 +128,10 @@
   --input: oklch(0.28 0.03 260);
   --ring: oklch(0.74 0.05 145);
 
-  --rose: oklch(0.6 0.07 20);
+  --rose: oklch(0.76 0.06 20);
   --sage: oklch(0.5 0.05 145);
   --forest: oklch(0.8 0.05 150);
-  --gold: oklch(0.8 0.1 80);
+  --gold: oklch(0.84 0.09 80);
   --cream: oklch(0.22 0.035 260);
 
   --shadow-soft: 0 10px 30px -12px oklch(0 0 0 / 0.6);
@@ -300,9 +300,38 @@
     border-color: var(--color-primary);
   }
 
+  select.contact-input {
+    background-color: var(--color-card);
+    color-scheme: light;
+  }
+
+  .dark select.contact-input {
+    color-scheme: dark;
+  }
+
+  select.contact-input option {
+    background-color: var(--color-card);
+    color: var(--color-foreground);
+  }
+
   .defer-render {
     content-visibility: auto;
     contain-intrinsic-size: 1px 900px;
+  }
+}
+
+@layer utilities {
+  .text-primary\/40 {
+    color: color-mix(in oklab, var(--color-primary) 70%, var(--color-foreground));
+  }
+
+  .text-primary\/50,
+  .text-primary\/60 {
+    color: color-mix(in oklab, var(--color-primary) 78%, var(--color-foreground));
+  }
+
+  .text-primary\/70 {
+    color: color-mix(in oklab, var(--color-primary) 88%, var(--color-foreground));
   }
 }
 

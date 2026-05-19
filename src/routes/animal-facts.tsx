@@ -118,7 +118,7 @@ function AnimalFactsPage() {
   }
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-14">
+    <main className="max-w-6xl mx-auto px-6 pt-28 pb-14 md:pt-32">
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="max-w-2xl">
           <span className="tag-chip gold">daily field note</span>

@@ -150,13 +150,15 @@ function AboutPage() {
           <div className="inline-block">
             <span className="tag-chip rose">hello, friend</span>
           </div>
-          <h1 className="font-display italic text-7xl md:text-8xl lg:text-9xl text-foreground leading-[0.85] tracking-tight">
-            A quiet maker of <span className="text-primary relative">
+          <h1 className="font-display italic text-7xl md:text-8xl lg:text-9xl text-foreground leading-[0.95] tracking-tight">
+            A quiet maker of{" "}
+            <span className="text-primary relative inline-block">
               magical
                <svg className="absolute -bottom-2 left-0 w-full h-3 text-secondary/20" viewBox="0 0 100 12" preserveAspectRatio="none">
                 <path d="M0,5 Q25,0 50,5 T100,5" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
               </svg>
-            </span> things
+            </span>{" "}
+            things
           </h1>
           <div className="font-serif italic text-xl md:text-2xl text-foreground/80 leading-relaxed space-y-6 max-w-2xl border-l-2 border-primary/10 pl-8">
             <p>
