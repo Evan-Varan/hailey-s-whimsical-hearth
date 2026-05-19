@@ -167,25 +167,60 @@ function AboutPage() {
         </div>
 
         <div className="relative">
-          <div className="paper-card overflow-hidden">
+          {/* Stacked card effect */}
+          <div className="absolute -bottom-3 -right-3 w-full h-full rounded-2xl bg-muted/50 border border-border/50" />
+          <div className="absolute -bottom-1.5 -right-1.5 w-full h-full rounded-2xl bg-card/80 border border-border/70" />
+          
+          {/* Main image container */}
+          <div className="relative rounded-2xl overflow-hidden border border-border bg-card shadow-[var(--shadow-soft)]">
             {heroImage?.imageUrl ? (
-              <>
+              <div className="relative group">
                 <img
                   src={heroImage.imageUrl}
                   alt={heroImage.caption ?? "Instagram post"}
                   width={900}
                   height={900}
-                  className="aspect-square w-full object-cover transition-opacity duration-700"
+                  className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                 />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3">
-                  <span className="rounded-full border border-border bg-card px-3 py-1.5 font-hand text-sm font-semibold text-foreground shadow-sm">
-                    from Instagram
-                  </span>
-                  <InstagramLogo weight="duotone" className="h-5 w-5 text-primary" />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* Caption on hover */}
+                {heroImage.caption && (
+                  <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                    <p className="font-serif-display text-sm text-white/90 line-clamp-2">
+                      {heroImage.caption}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Instagram badge - top corner */}
+                <a 
+                  href="https://instagram.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/90 backdrop-blur-sm border border-border/80 shadow-sm hover:bg-card transition-colors"
+                >
+                  <InstagramLogo weight="duotone" className="h-4 w-4 text-primary" />
+                  <span className="font-sans-ui text-xs font-medium text-foreground">Follow</span>
+                </a>
+                
+                {/* Image indicator dots */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                  {instagramImages.slice(0, 5).map((_, idx) => (
+                    <span 
+                      key={idx}
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                        idx === imageIndex % 5 
+                          ? 'bg-white w-4' 
+                          : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
                 </div>
-              </>
+              </div>
             ) : (
-              <Skeleton className="aspect-square w-full rounded-none" />
+              <Skeleton className="aspect-[4/5] w-full rounded-none" />
             )}
           </div>
         </div>
