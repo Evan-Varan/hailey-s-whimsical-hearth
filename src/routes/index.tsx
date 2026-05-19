@@ -2,22 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   BookOpenText,
-  Coffee,
-  Feather,
   Images,
-  Mailbox,
   MoonStars,
-  Notebook,
   PinterestLogo,
   Planet,
   Sparkle,
   SunDim,
-  UserCircle,
   VinylRecord,
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 
-import { SectionHeader } from "@/components/SparkleField";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   formatJournalDate,
@@ -141,139 +135,153 @@ function Home() {
   }, [instagramImages.length]);
 
   return (
-    <main>
-      {/* Hero */}
-      <section className="relative max-w-7xl mx-auto px-6 pt-10 pb-20 md:pt-16 md:pb-28">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="relative z-10">
-            <span className="tag-chip gold">Hailey's personal website</span>
-            <h1 className="font-hand text-6xl md:text-7xl lg:text-8xl text-foreground leading-[0.95] mt-6">
-              Hi, I'm
+    <main className="pt-20 md:pt-24">
+      {/* Hero Section */}
+      <section className="container-wide section-gap">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Text Content */}
+          <div className="order-2 lg:order-1">
+            <span className="tag-chip gold">Welcome to my corner of the internet</span>
+            <h1 className="mt-6 font-hand text-5xl sm:text-6xl lg:text-7xl text-foreground leading-[1.05]">
+              Hi, I&apos;m Hailey.
               <br />
-              <span className="text-primary italic">Hailey.</span>
+              <span className="text-primary">This is my</span>
               <br />
-              Welcome to my <span className="text-secondary-foreground">website.</span>
+              <span className="text-muted-foreground">digital hearth.</span>
             </h1>
-            <p className="font-serif-display text-lg md:text-xl text-muted-foreground mt-8 max-w-lg leading-relaxed">
-              This is where I share what I'm making, writing, listening to, and loving lately:
-              crochet, tarot, D&amp;D, cats, horses, and pieces of everyday life.
+            <p className="mt-8 font-serif-display text-lg text-muted-foreground leading-relaxed max-w-lg">
+              A cozy space where I share what I&apos;m making, writing, and loving lately — crochet, 
+              tarot, D&amp;D adventures, cats, horses, and everyday magic.
             </p>
-            <div className="flex flex-wrap gap-3 mt-10">
+            
+            <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link to="/journal" className="btn-primary">
-                Read the journal <ArrowRight weight="bold" className="w-4 h-4" />
+                Read the journal
+                <ArrowRight weight="bold" className="w-4 h-4" />
               </Link>
               <Link to="/about" className="btn-ghost">
-                <UserCircle weight="duotone" className="w-4 h-4" /> About Hailey
+                About me
               </Link>
             </div>
-            <div className="flex items-center gap-6 mt-12 text-xs font-serif-display italic text-muted-foreground">
-              <span className="flex items-center gap-2">
-                <Feather weight="duotone" className="w-3 h-3 text-accent" /> Est. ’24
-              </span>
-              <span className="flex items-center gap-2">
-                <BookOpenText weight="duotone" className="w-3 h-3 text-primary" /> 153 entries
-              </span>
-              <span className="flex items-center gap-2">
-                <Coffee weight="duotone" className="w-3 h-3 text-secondary-foreground" /> 4.2k
-                readers
-              </span>
+
+            {/* Stats */}
+            <div className="mt-12 pt-8 border-t border-border flex flex-wrap items-center gap-8">
+              <Stat label="Journal entries" value="153" />
+              <Stat label="Readers" value="4.2k" />
+              <Stat label="Since" value="2024" />
             </div>
           </div>
 
-          <div className="relative">
-            <div
-              className="absolute -top-6 -left-6 w-24 h-24 rounded-full bg-secondary/40 blur-2xl animate-drift"
-              aria-hidden
-            />
-            <div
-              className="absolute -bottom-8 -right-4 w-32 h-32 rounded-full bg-accent/30 blur-3xl animate-drift"
-              aria-hidden
-            />
-            <div className="relative paper-card overflow-hidden">
-              {heroImage?.imageUrl ? (
-                <>
+          {/* Hero Image */}
+          <div className="order-1 lg:order-2">
+            <div className="relative">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-muted">
+                {heroImage?.imageUrl ? (
                   <img
                     src={heroImage.imageUrl}
-                    alt={heroImage.caption ?? "Instagram post"}
-                    width={1280}
-                    height={1280}
-                    className="aspect-square w-full object-cover transition-opacity duration-700"
+                    alt={heroImage.caption ?? "A glimpse of my life"}
+                    className="w-full h-full object-cover transition-all duration-700"
                   />
-                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between font-hand text-foreground/80">
-                    <span className="rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground shadow-sm">
-                      ✦ from Instagram
+                ) : (
+                  <Skeleton className="w-full h-full rounded-none" />
+                )}
+                
+                {/* Floating badge */}
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                  <span className="px-3 py-1.5 rounded-full bg-card/90 backdrop-blur-sm border border-border/50 font-sans-ui text-xs font-medium text-foreground">
+                    From Instagram
+                  </span>
+                  {heroImage?.timestamp && (
+                    <span className="px-3 py-1.5 rounded-full bg-card/90 backdrop-blur-sm border border-border/50 font-sans-ui text-xs font-medium text-muted-foreground">
+                      {formatHeroImageDate(heroImage.timestamp)}
                     </span>
-                    <span className="rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground shadow-sm">
-                      {heroImage.timestamp ? formatHeroImageDate(heroImage.timestamp) : ""}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <Skeleton className="aspect-square w-full rounded-none" />
-              )}
+                  )}
+                </div>
+              </div>
+              
+              {/* Decorative elements */}
+              <div className="absolute -z-10 -top-4 -right-4 w-full h-full rounded-2xl border border-border bg-muted/50" aria-hidden />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
-        <SectionHeader eyebrow="recently written" title="featured journal entries" />
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,384px))] justify-center gap-6 mt-12">
-          {substackLoading
-            ? Array.from({ length: 3 }, (_, index) => <JournalCardSkeleton key={index} />)
-            : liveFeatured.map((post) => <FeaturedSubstackCard key={post.id} post={post} />)}
-        </div>
-        {!substackLoading && !liveFeatured.length ? (
-          <p className="font-serif-display italic text-muted-foreground text-center mt-8">
-            {substackError ?? "No journal posts are available right now."}
-          </p>
-        ) : null}
-        <div className="text-center mt-12">
-          <Link to="/journal" className="btn-ghost">
-            browse the full journal <ArrowRight weight="bold" className="w-4 h-4" />
-          </Link>
+      {/* Featured Journal Section */}
+      <section className="bg-muted/30 border-y border-border">
+        <div className="container-wide section-gap">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+            <div>
+              <span className="tag-chip sage">Recently written</span>
+              <h2 className="mt-3 font-hand text-4xl md:text-5xl text-foreground">
+                Featured journal entries
+              </h2>
+            </div>
+            <Link to="/journal" className="btn-link">
+              View all entries
+              <ArrowRight weight="bold" className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {substackLoading
+              ? Array.from({ length: 3 }, (_, index) => <JournalCardSkeleton key={index} />)
+              : liveFeatured.map((post) => <FeaturedJournalCard key={post.id} post={post} />)}
+          </div>
+
+          {!substackLoading && !liveFeatured.length && (
+            <p className="text-center font-serif-display text-muted-foreground mt-8">
+              {substackError ?? "No journal posts are available right now."}
+            </p>
+          )}
         </div>
       </section>
 
-      {/* Live previews */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
-        <SectionHeader eyebrow="look around" title="gallery and astrology" />
-        <div className="grid lg:grid-cols-2 gap-6 mt-12">
+      {/* Explore Section */}
+      <section className="container-wide section-gap">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+          <div>
+            <span className="tag-chip rose">Explore more</span>
+            <h2 className="mt-3 font-hand text-4xl md:text-5xl text-foreground">
+              Gallery & Astrology
+            </h2>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6">
           <GalleryPreviewCard images={instagramImages} />
           <AstrologyPreviewCard />
         </div>
       </section>
 
-      {/* Dashboard preview */}
-      <section className="max-w-7xl mx-auto px-6 py-14">
-        <SectionHeader eyebrow="dashboard" title="what's alive here" />
-        <div className="grid lg:grid-cols-6 gap-4 mt-10">
-          <SpotifyMiniPreview nowPlaying={spotifyNowPlaying} topTracks={spotifyTopTracks} />
-          <PinterestMiniPreview pinterest={pinterest} />
-          <FactsMiniPreview animalFact={animalFact} funFact={funFact} />
+      {/* Dashboard Section */}
+      <section className="bg-muted/30 border-y border-border">
+        <div className="container-wide section-gap">
+          <div className="mb-10">
+            <span className="tag-chip gold">Dashboard</span>
+            <h2 className="mt-3 font-hand text-4xl md:text-5xl text-foreground">
+              What&apos;s happening
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <SpotifyMiniPreview nowPlaying={spotifyNowPlaying} topTracks={spotifyTopTracks} />
+            <PinterestMiniPreview pinterest={pinterest} />
+            <FactsMiniPreview animalFact={animalFact} funFact={funFact} />
+          </div>
         </div>
       </section>
 
-      {/* Newsletter teaser */}
-      <section className="max-w-5xl mx-auto px-6 py-20">
-        <div className="paper-card p-10 md:p-16 text-center relative overflow-hidden">
-          <div
-            className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-secondary/40 blur-3xl"
-            aria-hidden
-          />
-          <div
-            className="absolute -bottom-12 -right-12 w-56 h-56 rounded-full bg-accent/30 blur-3xl"
-            aria-hidden
-          />
-          <Mailbox weight="duotone" className="w-6 h-6 text-accent mx-auto" />
-          <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-4">
+      {/* Newsletter Section */}
+      <section className="container-narrow section-gap">
+        <div className="text-center">
+          <span className="tag-chip sage">Stay connected</span>
+          <h2 className="mt-4 font-hand text-4xl md:text-5xl text-foreground">
             Letters from the cottage
           </h2>
-          <p className="font-serif-display italic text-lg text-muted-foreground mt-4 max-w-xl mx-auto">
-            One slow letter a month — tarot pulls, free patterns, what I'm reading, and small notes
-            from the woods.
+          <p className="mt-4 font-serif-display text-lg text-muted-foreground max-w-md mx-auto">
+            One slow letter a month — tarot pulls, free patterns, and small notes from my world.
           </p>
+
           <form
             className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
             onSubmit={(e) => e.preventDefault()}
@@ -281,11 +289,11 @@ function Home() {
             <input
               type="email"
               required
-              placeholder="your email, gentle reader"
+              placeholder="your@email.com"
               className="flex-1 px-5 py-3 rounded-full bg-card border border-border focus:border-primary focus:outline-none font-serif-display text-foreground placeholder:text-muted-foreground"
             />
-            <button type="submit" className="btn-primary justify-center">
-              Subscribe <Feather weight="duotone" className="w-4 h-4" />
+            <button type="submit" className="btn-primary">
+              Subscribe
             </button>
           </form>
         </div>
@@ -294,94 +302,181 @@ function Home() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                 Components                                  */
+/* -------------------------------------------------------------------------- */
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="font-hand text-2xl text-foreground">{value}</p>
+      <p className="font-sans-ui text-[0.6875rem] uppercase tracking-[0.1em] text-muted-foreground">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function FeaturedJournalCard({ post }: { post: SubstackPost }) {
+  return (
+    <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden transition-all hover:border-primary/50 hover:shadow-md">
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        {post.imageUrl ? (
+          <img
+            src={post.imageUrl}
+            alt=""
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center">
+            <BookOpenText weight="duotone" className="w-12 h-12 text-muted-foreground/30" />
+          </div>
+        )}
+        <span className="absolute top-3 left-3 cat-stamp">
+          <span className="dot" />
+          {getJournalTagLabel(post.title, post.tags[0] ?? "Journal")}
+        </span>
+      </div>
+
+      <div className="flex flex-col flex-1 p-5">
+        <div className="flex items-center gap-2 text-xs font-sans-ui text-muted-foreground">
+          <span>{formatJournalDate(post.publishedAt, false)}</span>
+          <span className="text-border">·</span>
+          <span>{post.read}</span>
+        </div>
+
+        <h3 className="mt-3 font-hand text-2xl text-foreground leading-tight group-hover:text-primary transition-colors">
+          {post.title}
+        </h3>
+
+        <p className="mt-2 font-serif-display text-muted-foreground line-clamp-2 flex-1">
+          {post.excerpt}
+        </p>
+
+        <a
+          href={post.url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 btn-link text-sm"
+        >
+          Read on Substack
+          <ArrowRight weight="bold" className="w-3.5 h-3.5" />
+        </a>
+      </div>
+    </article>
+  );
+}
+
+function JournalCardSkeleton() {
+  return (
+    <article className="flex flex-col rounded-2xl border border-border bg-card overflow-hidden">
+      <Skeleton className="aspect-[16/10] rounded-none" />
+      <div className="p-5 space-y-3">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-7 w-4/5" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-4 w-28 mt-2" />
+      </div>
+    </article>
+  );
+}
+
 function GalleryPreviewCard({ images }: { images: InstagramHeroImage[] }) {
   const previewImages = useMemo(() => getShuffledImages(images).slice(0, 4), [images]);
 
   return (
-    <Link to="/gallery" className="paper-card group overflow-hidden">
-      <div className="grid grid-cols-2 gap-1 bg-muted">
+    <Link 
+      to="/gallery" 
+      className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden transition-all hover:border-primary/50 hover:shadow-md"
+    >
+      <div className="grid grid-cols-2 gap-0.5 bg-border">
         {previewImages.length
           ? previewImages.map((image) => (
-              <img
-                key={image.id}
-                src={image.imageUrl}
-                alt={image.caption ?? ""}
-                loading="lazy"
-                className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-              />
+              <div key={image.id} className="aspect-square overflow-hidden">
+                <img
+                  src={image.imageUrl}
+                  alt={image.caption ?? ""}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
             ))
           : Array.from({ length: 4 }, (_, index) => (
               <Skeleton key={index} className="aspect-square rounded-none" />
             ))}
       </div>
-      <div className="p-6">
-        <span className="tag-chip rose">gallery</span>
-        <h3 className="font-hand text-4xl text-foreground mt-3">Lately from Hailey</h3>
-        <p className="font-serif-display italic text-muted-foreground mt-2">
-          Recent photos, projects, outfits, tiny moments, and whatever made it onto Instagram.
+
+      <div className="p-5">
+        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+          <Images weight="duotone" className="w-4 h-4" />
+          <span className="font-sans-ui text-xs uppercase tracking-wider">Gallery</span>
+        </div>
+        <h3 className="font-hand text-2xl text-foreground group-hover:text-primary transition-colors">
+          Lately from Hailey
+        </h3>
+        <p className="mt-2 font-serif-display text-sm text-muted-foreground">
+          Recent photos, projects, and tiny moments from Instagram.
         </p>
-        <span className="mt-5 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm group-hover:gap-3 transition-all">
-          open the gallery <ArrowRight weight="bold" className="w-3 h-3" />
+        <span className="mt-4 btn-link text-sm">
+          Open gallery
+          <ArrowRight weight="bold" className="w-3.5 h-3.5" />
         </span>
       </div>
     </Link>
   );
 }
 
-function getShuffledImages<T>(items: T[]) {
-  const shuffled = [...items];
-
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
-  }
-
-  return shuffled;
-}
-
 function AstrologyPreviewCard() {
   const reading = getHomeAstrologyPreview();
 
   return (
-    <Link to="/astrology" className="paper-card group overflow-hidden p-6 md:p-8">
+    <Link 
+      to="/astrology" 
+      className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden p-5 transition-all hover:border-primary/50 hover:shadow-md"
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <span className="tag-chip gold">astrology</span>
-          <h3 className="font-hand text-4xl text-foreground mt-3">Daily astrology</h3>
-          <p className="font-serif-display italic text-sm text-muted-foreground mt-2">
+          <div className="flex items-center gap-2 text-muted-foreground mb-2">
+            <Planet weight="duotone" className="w-4 h-4" />
+            <span className="font-sans-ui text-xs uppercase tracking-wider">Astrology</span>
+          </div>
+          <h3 className="font-hand text-2xl text-foreground group-hover:text-primary transition-colors">
+            Daily forecast
+          </h3>
+          <p className="mt-1 font-sans-ui text-xs text-muted-foreground">
             {reading.date}
           </p>
         </div>
-        <Planet weight="duotone" className="h-8 w-8 text-primary" />
       </div>
 
-      <div className="mt-8 grid sm:grid-cols-3 gap-3">
+      <div className="mt-6 grid grid-cols-3 gap-3">
         <AstrologyStat
-          icon={<SunDim weight="duotone" />}
-          label="today's sign"
+          icon={<SunDim weight="duotone" className="w-4 h-4" />}
+          label="Sign"
           value={reading.sign}
-          note={reading.tone}
         />
         <AstrologyStat
-          icon={<MoonStars weight="duotone" />}
-          label="moon"
+          icon={<MoonStars weight="duotone" className="w-4 h-4" />}
+          label="Moon"
           value={reading.moonPhase}
-          note={reading.focus}
         />
         <AstrologyStat
-          icon={<Sparkle weight="duotone" />}
-          label="ritual"
-          value={reading.ritualTitle}
-          note={reading.ritual}
+          icon={<Sparkle weight="duotone" className="w-4 h-4" />}
+          label="Focus"
+          value={reading.focus}
         />
       </div>
 
-      <p className="font-serif-display italic text-muted-foreground mt-6">
-        Today's quick read leans toward <em>{reading.focus}</em>. The full page expands this into
-        your sign, live transits, a horoscope, and a longer ritual.
+      <p className="mt-5 font-serif-display text-sm text-muted-foreground flex-1">
+        Today&apos;s energy leans toward <em>{reading.tone}</em>. Check the full forecast for 
+        your sign, transits, and a daily ritual.
       </p>
-      <span className="mt-5 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm group-hover:gap-3 transition-all">
-        read the forecast <ArrowRight weight="bold" className="w-3 h-3" />
+
+      <span className="mt-4 btn-link text-sm">
+        Read forecast
+        <ArrowRight weight="bold" className="w-3.5 h-3.5" />
       </span>
     </Link>
   );
@@ -391,80 +486,211 @@ function AstrologyStat({
   icon,
   label,
   value,
-  note,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  note: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card/70 p-3">
-      <div className="flex items-center gap-2 text-primary [&_svg]:h-4 [&_svg]:w-4">{icon}</div>
-      <p className="font-sans-ui text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-3">
+    <div className="rounded-xl bg-muted/50 p-3">
+      <div className="text-primary">{icon}</div>
+      <p className="mt-2 font-sans-ui text-[0.625rem] uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
-      <p className="font-hand text-2xl leading-none text-foreground mt-1">{value}</p>
-      <p className="line-clamp-2 font-serif-display italic text-xs text-muted-foreground mt-2">
-        {note}
+      <p className="mt-0.5 font-hand text-lg text-foreground leading-tight truncate">
+        {value}
       </p>
     </div>
   );
 }
 
+function DashboardCard({
+  icon,
+  label,
+  title,
+  to,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  title: string;
+  to: "/gallery" | "/astrology" | "/about" | "/animal-facts";
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-md"
+    >
+      <div className="flex items-center gap-2 text-muted-foreground mb-3">
+        {icon}
+        <span className="font-sans-ui text-xs uppercase tracking-wider">{label}</span>
+      </div>
+      <h3 className="font-hand text-xl text-foreground group-hover:text-primary transition-colors">
+        {title}
+      </h3>
+      <div className="mt-3 flex-1">{children}</div>
+    </Link>
+  );
+}
+
+function SpotifyMiniPreview({
+  nowPlaying,
+  topTracks,
+}: {
+  nowPlaying: SpotifyNowPlaying | undefined;
+  topTracks: SpotifyTopTracks | undefined;
+}) {
+  const track = nowPlaying?.playing ?? topTracks?.items[0];
+  const title = nowPlaying?.playing?.isPlaying ? "Now playing" : "Top track";
+
+  return (
+    <DashboardCard
+      icon={<VinylRecord weight="duotone" className="w-4 h-4" />}
+      label="Spotify"
+      title={title}
+      to="/gallery"
+    >
+      {track ? (
+        <div className="flex items-center gap-3">
+          {track.imageUrl ? (
+            <img 
+              src={track.imageUrl} 
+              alt="" 
+              className="h-12 w-12 rounded-lg object-cover flex-shrink-0" 
+            />
+          ) : (
+            <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+              <VinylRecord weight="duotone" className="w-5 h-5 text-muted-foreground" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="font-serif-display text-foreground truncate">{track.name}</p>
+            <p className="font-serif-display text-sm text-muted-foreground truncate">
+              {track.artists.join(", ")}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <p className="font-serif-display text-sm text-muted-foreground">
+          {nowPlaying?.configured === false || topTracks?.configured === false
+            ? "Spotify can be connected here."
+            : "Loading music..."}
+        </p>
+      )}
+    </DashboardCard>
+  );
+}
+
+function PinterestMiniPreview({ pinterest }: { pinterest: PinterestFeed | undefined }) {
+  const pins = pinterest?.items.filter((pin) => pin.imageUrl).slice(0, 3) ?? [];
+  const comingSoon = pinterest?.configured === false;
+
+  return (
+    <DashboardCard
+      icon={<PinterestLogo weight="duotone" className="w-4 h-4" />}
+      label="Pinterest"
+      title={comingSoon ? "Coming soon" : "Recent saves"}
+      to="/gallery"
+    >
+      {comingSoon ? (
+        <p className="font-serif-display text-sm text-muted-foreground">
+          A peek at saved ideas and inspiration is coming soon.
+        </p>
+      ) : pins.length ? (
+        <div className="grid grid-cols-3 gap-1.5">
+          {pins.map((pin) => (
+            <img
+              key={pin.id}
+              src={pin.imageUrl}
+              alt={pin.title}
+              className="aspect-square rounded-lg object-cover"
+              loading="lazy"
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="font-serif-display text-sm text-muted-foreground">
+          Recent pins will appear here.
+        </p>
+      )}
+    </DashboardCard>
+  );
+}
+
+function FactsMiniPreview({
+  animalFact,
+  funFact,
+}: {
+  animalFact: DailyAnimalFact | undefined;
+  funFact: DailyFunFact | undefined;
+}) {
+  return (
+    <DashboardCard
+      icon={<Sparkle weight="duotone" className="w-4 h-4" />}
+      label="Daily fact"
+      title={animalFact?.name ?? "Animal facts"}
+      to="/animal-facts"
+    >
+      <p className="font-serif-display text-sm text-muted-foreground line-clamp-3">
+        {animalFact?.fact ?? funFact?.fact ?? "Animal facts and trivia load here daily."}
+      </p>
+    </DashboardCard>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  Helpers                                    */
+/* -------------------------------------------------------------------------- */
+
 function getHomeAstrologyPreview() {
   const signs = [
-    { name: "Aries", tone: "begin again" },
-    { name: "Taurus", tone: "tend the body" },
-    { name: "Gemini", tone: "say the true thing" },
-    { name: "Cancer", tone: "come home to yourself" },
-    { name: "Leo", tone: "let warmth lead" },
-    { name: "Virgo", tone: "make one small order" },
-    { name: "Libra", tone: "choose harmony" },
-    { name: "Scorpio", tone: "trust the deep knowing" },
-    { name: "Sagittarius", tone: "follow the far light" },
-    { name: "Capricorn", tone: "build with patience" },
-    { name: "Aquarius", tone: "think wider" },
-    { name: "Pisces", tone: "soften the edges" },
+    { name: "Aries", tone: "beginning again" },
+    { name: "Taurus", tone: "tending the body" },
+    { name: "Gemini", tone: "speaking truth" },
+    { name: "Cancer", tone: "coming home" },
+    { name: "Leo", tone: "letting warmth lead" },
+    { name: "Virgo", tone: "making order" },
+    { name: "Libra", tone: "choosing harmony" },
+    { name: "Scorpio", tone: "trusting intuition" },
+    { name: "Sagittarius", tone: "following light" },
+    { name: "Capricorn", tone: "building patience" },
+    { name: "Aquarius", tone: "thinking wider" },
+    { name: "Pisces", tone: "softening edges" },
   ] as const;
+
   const moonPhases = [
-    "new moon",
-    "waxing crescent",
-    "first quarter",
-    "waxing gibbous",
-    "full moon",
-    "waning gibbous",
-    "last quarter",
-    "waning crescent",
+    "New Moon",
+    "Waxing Crescent",
+    "First Quarter",
+    "Waxing Gibbous",
+    "Full Moon",
+    "Waning Gibbous",
+    "Last Quarter",
+    "Waning Crescent",
   ];
+
   const focuses = [
-    "home and roots",
-    "daily rituals",
-    "creative courage",
-    "friendship and belonging",
-    "work worth doing",
-    "rest and repair",
-    "clear agreements",
-    "care and enoughness",
+    "Home",
+    "Rituals",
+    "Creativity",
+    "Community",
+    "Work",
+    "Rest",
+    "Clarity",
+    "Care",
   ];
-  const rituals = [
-    { title: "candle note", text: "write one sentence before lighting a candle" },
-    { title: "clear surface", text: "reset one small table, shelf, or corner" },
-    { title: "tea pause", text: "let the first sip be the whole ceremony" },
-    { title: "soft yes", text: "choose one honest yes and one kind no" },
-    { title: "hands on earth", text: "touch yarn, soil, paper, or warm water" },
-    { title: "moon list", text: "name what can be released by evening" },
-  ];
+
   const today = new Date();
   const key = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
   const seed = Array.from(key).reduce((total, char) => total + char.charCodeAt(0), 0);
   const sign = signs[seed % signs.length];
+
   const formatter = new Intl.DateTimeFormat("en", {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
-  const ritual = rituals[(seed + 3) % rituals.length];
 
   return {
     date: formatter.format(today),
@@ -472,10 +698,66 @@ function getHomeAstrologyPreview() {
     tone: sign.tone,
     moonPhase: moonPhases[(seed + 2) % moonPhases.length],
     focus: focuses[(seed + 4) % focuses.length],
-    ritualTitle: ritual.title,
-    ritual: ritual.text,
   };
 }
+
+function getShuffledImages<T>(items: T[]) {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function getShuffledImageQueue(length: number) {
+  const indexes = Array.from({ length }, (_, index) => index);
+  for (let index = indexes.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [indexes[index], indexes[swapIndex]] = [indexes[swapIndex], indexes[index]];
+  }
+  return indexes;
+}
+
+function formatHeroImageDate(timestamp: string) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return timestamp;
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+function getInstagramHeroImages(feed: InstagramFeed) {
+  if (!feed.configured) return [];
+  return feed.items.flatMap((post) => {
+    const media = post.media?.length
+      ? post.media
+      : [{ id: post.id, imageUrl: post.imageUrl, mediaUrl: post.imageUrl, mediaType: "IMAGE" }];
+    return media
+      .filter((item) => item.mediaType !== "VIDEO" && (item.imageUrl || item.mediaUrl))
+      .map((item) => ({
+        ...item,
+        imageUrl: item.imageUrl ?? item.mediaUrl,
+        caption: post.caption,
+        timestamp: post.timestamp,
+      }));
+  });
+}
+
+async function fetchJson<T>(url: string, signal: AbortSignal) {
+  const response = await fetch(url, { cache: "no-store", signal });
+  const payload = (await response.json()) as T & { error?: string };
+  if (!response.ok) {
+    throw new Error(payload.error ?? `Request failed with ${response.status}`);
+  }
+  return payload as T;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                   Types                                     */
+/* -------------------------------------------------------------------------- */
 
 type InstagramFeed = {
   configured: boolean;
@@ -539,253 +821,3 @@ type DailyFunFact = {
   fact: string;
   imageUrl?: string;
 };
-
-function getInstagramHeroImages(feed: InstagramFeed) {
-  if (!feed.configured) return [];
-
-  return feed.items.flatMap((post) => {
-    const media = post.media?.length
-      ? post.media
-      : [
-          {
-            id: post.id,
-            imageUrl: post.imageUrl,
-            mediaUrl: post.imageUrl,
-            mediaType: "IMAGE",
-          },
-        ];
-
-    return media
-      .filter((item) => item.mediaType !== "VIDEO" && (item.imageUrl || item.mediaUrl))
-      .map((item) => ({
-        ...item,
-        imageUrl: item.imageUrl ?? item.mediaUrl,
-        caption: post.caption,
-        timestamp: post.timestamp,
-      }));
-  });
-}
-
-function formatHeroImageDate(timestamp: string) {
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return timestamp;
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
-
-function getShuffledImageQueue(length: number) {
-  const indexes = Array.from({ length }, (_, index) => index);
-
-  for (let index = indexes.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [indexes[index], indexes[swapIndex]] = [indexes[swapIndex], indexes[index]];
-  }
-
-  return indexes;
-}
-
-async function fetchJson<T>(url: string, signal: AbortSignal) {
-  const response = await fetch(url, { cache: "no-store", signal });
-  const payload = (await response.json()) as T & { error?: string };
-
-  if (!response.ok) {
-    throw new Error(payload.error ?? `Request failed with ${response.status}`);
-  }
-
-  return payload as T;
-}
-
-function FeaturedSubstackCard({ post }: { post: SubstackPost }) {
-  return (
-    <article className="paper-card overflow-hidden flex flex-col">
-      <div className="relative h-56 overflow-hidden">
-        {post.imageUrl ? (
-          <img
-            src={post.imageUrl}
-            alt=""
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-          />
-        ) : (
-          <div className="w-full h-full bg-muted" />
-        )}
-        <span className="cat-stamp absolute top-3 left-3">
-          <span className="dot" /> {getJournalTagLabel(post.title, post.tags[0] ?? "Substack")}
-        </span>
-      </div>
-      <div className="p-6 flex flex-col flex-1">
-        <div className="flex items-center gap-3 text-xs font-serif-display italic text-muted-foreground">
-          <span>{formatJournalDate(post.publishedAt, false)}</span>
-          <span>·</span>
-          <span>{post.read}</span>
-        </div>
-        <h3 className="font-hand text-3xl text-foreground mt-3 leading-tight">{post.title}</h3>
-        <p className="font-serif-display text-muted-foreground mt-3 italic flex-1">
-          {post.excerpt}
-        </p>
-        <a
-          href={post.url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-5 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm hover:gap-3 transition-all"
-        >
-          read on Substack <ArrowRight weight="bold" className="w-3 h-3" />
-        </a>
-      </div>
-    </article>
-  );
-}
-
-function JournalCardSkeleton() {
-  return (
-    <article className="paper-card overflow-hidden flex flex-col">
-      <Skeleton className="h-56 w-full rounded-none" />
-      <div className="p-6 flex flex-col flex-1">
-        <Skeleton className="h-3 w-28" />
-        <Skeleton className="h-8 w-4/5 mt-4" />
-        <Skeleton className="h-4 w-full mt-4" />
-        <Skeleton className="h-4 w-2/3 mt-2" />
-        <Skeleton className="h-4 w-24 mt-6" />
-      </div>
-    </article>
-  );
-}
-
-function DashboardCard({
-  eyebrow,
-  title,
-  icon,
-  to,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  icon: React.ReactNode;
-  to: "/gallery" | "/astrology" | "/about" | "/animal-facts";
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      to={to}
-      className="group rounded-2xl border border-border bg-card/80 p-4 transition-colors hover:border-primary lg:col-span-2"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-            {eyebrow}
-          </p>
-          <h3 className="font-hand text-3xl leading-none text-foreground mt-1">{title}</h3>
-        </div>
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-secondary/40 text-forest transition-colors group-hover:bg-accent/40 dark:text-foreground">
-          {icon}
-        </span>
-      </div>
-      <div className="mt-4">{children}</div>
-    </Link>
-  );
-}
-
-function SpotifyMiniPreview({
-  nowPlaying,
-  topTracks,
-}: {
-  nowPlaying: SpotifyNowPlaying | undefined;
-  topTracks: SpotifyTopTracks | undefined;
-}) {
-  const track = nowPlaying?.playing ?? topTracks?.items[0];
-  const title = nowPlaying?.playing?.isPlaying ? "currently listening" : "top song this month";
-
-  return (
-    <DashboardCard
-      eyebrow="spotify"
-      title={title}
-      to="/gallery"
-      icon={<VinylRecord weight="duotone" className="w-5 h-5" />}
-    >
-      {track ? (
-        <div className="flex items-center gap-3">
-          {track.imageUrl ? (
-            <img src={track.imageUrl} alt="" className="h-14 w-14 rounded-xl object-cover" />
-          ) : (
-            <div className="grid h-14 w-14 place-items-center rounded-xl bg-muted">
-              <VinylRecord weight="duotone" className="h-6 w-6 text-muted-foreground" />
-            </div>
-          )}
-          <div className="min-w-0">
-            <p className="truncate font-serif-display italic text-foreground">{track.name}</p>
-            <p className="truncate font-serif-display italic text-sm text-muted-foreground">
-              {track.artists.join(", ")}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <p className="font-serif-display italic text-sm text-muted-foreground">
-          {nowPlaying?.configured === false || topTracks?.configured === false
-            ? "Spotify can be connected here."
-            : "Top song is not showing yet."}
-        </p>
-      )}
-    </DashboardCard>
-  );
-}
-
-function PinterestMiniPreview({ pinterest }: { pinterest: PinterestFeed | undefined }) {
-  const pins = pinterest?.items.filter((pin) => pin.imageUrl).slice(0, 3) ?? [];
-  const comingSoon = pinterest?.configured === false;
-
-  return (
-    <DashboardCard
-      eyebrow="coming soon"
-      title={comingSoon ? "Pinterest inspiration" : "recent saves"}
-      to="/gallery"
-      icon={<PinterestLogo weight="duotone" className="w-5 h-5" />}
-    >
-      {comingSoon ? (
-        <p className="font-serif-display italic text-sm text-muted-foreground">
-          A peek at Hailey's saved ideas and favorite inspiration is coming soon.
-        </p>
-      ) : pins.length ? (
-        <div className="grid grid-cols-3 gap-1.5">
-          {pins.map((pin) => (
-            <img
-              key={pin.id}
-              src={pin.imageUrl}
-              alt={pin.title}
-              className="aspect-[3/4] rounded-lg object-cover"
-              loading="lazy"
-            />
-          ))}
-        </div>
-      ) : (
-        <p className="font-serif-display italic text-sm text-muted-foreground">
-          Recent pins will appear here.
-        </p>
-      )}
-    </DashboardCard>
-  );
-}
-
-function FactsMiniPreview({
-  animalFact,
-  funFact,
-}: {
-  animalFact: DailyAnimalFact | undefined;
-  funFact: DailyFunFact | undefined;
-}) {
-  return (
-    <DashboardCard
-      eyebrow="facts"
-      title={animalFact?.name ?? "daily facts"}
-      to="/animal-facts"
-      icon={<Sparkle weight="duotone" className="w-5 h-5" />}
-    >
-      <p className="line-clamp-2 font-serif-display italic text-sm text-muted-foreground">
-        {animalFact?.fact ?? funFact?.fact ?? "Animal facts and general trivia load here daily."}
-      </p>
-    </DashboardCard>
-  );
-}

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { ChatText, MagnifyingGlass, PencilLine } from "@phosphor-icons/react";
+import { ArrowRight, BookOpenText, MagnifyingGlass } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,7 +54,7 @@ function JournalPage() {
   }, []);
 
   const livePosts = substack?.items ?? [];
-  const sidebarItems = useMemo(() => livePosts.slice(0, 4), [livePosts]);
+  const sidebarItems = useMemo(() => livePosts.slice(0, 5), [livePosts]);
   const substackLoading = substack === undefined && !substackError;
 
   if (pathname !== "/journal") {
@@ -62,164 +62,268 @@ function JournalPage() {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-16">
-      <div className="text-center max-w-2xl mx-auto">
-        <span className="tag-chip">the journal</span>
-        <h1 className="font-hand text-6xl md:text-7xl text-foreground mt-4">
-          Notes from the cottage
-        </h1>
-        <p className="font-serif-display italic text-lg text-muted-foreground mt-4">
-          Long letters, short ones, recipes for tea and rituals for difficult Tuesdays. Wander in.
-        </p>
-      </div>
+    <main className="pt-20 md:pt-24">
+      {/* Hero Section */}
+      <section className="container-content section-gap pb-0">
+        <div className="text-center">
+          <span className="tag-chip sage">The Journal</span>
+          <h1 className="mt-4 font-hand text-5xl md:text-6xl lg:text-7xl text-foreground">
+            Notes from the cottage
+          </h1>
+          <p className="mt-4 font-serif-display text-lg text-muted-foreground max-w-xl mx-auto">
+            Long letters, short ones, recipes for tea and rituals for difficult Tuesdays. 
+            Wander in and stay awhile.
+          </p>
 
-      {/* Search */}
-      <div className="max-w-md mx-auto mt-10 relative">
-        <MagnifyingGlass className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="search"
-          placeholder="search the journal…"
-          className="w-full pl-11 pr-5 py-3 rounded-full bg-card border border-border focus:border-primary focus:outline-none font-serif-display italic"
-        />
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-10 mt-16">
-        {/* Posts list */}
-        <div className="lg:col-span-2 space-y-8">
-          {substackLoading
-            ? Array.from({ length: 5 }, (_, index) => <JournalPostSkeleton key={index} />)
-            : livePosts.map((post) => (
-                <article
-                  key={post.id}
-                  className="paper-card overflow-hidden grid sm:grid-cols-[200px_1fr]"
-                >
-                  <div className="relative h-48 sm:h-full overflow-hidden">
-                    {post.imageUrl ? (
-                      <img
-                        src={post.imageUrl}
-                        alt=""
-                        loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-muted" />
-                    )}
-                  </div>
-                  <div className="p-6 flex flex-col">
-                    <span className="tag-chip rose">
-                      {getJournalTagLabel(
-                        post.title,
-                        post.tags[0] ?? substack?.publication?.name ?? "Substack",
-                      )}
-                    </span>
-                    <h2 className="font-hand text-3xl text-foreground mt-2 leading-tight">
-                      {post.title}
-                    </h2>
-                    <p className="font-serif-display italic text-muted-foreground mt-2 flex-1">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="font-serif-display italic text-sm text-muted-foreground">
-                        {formatJournalDate(post.publishedAt)} · {post.read}
-                      </span>
-                      <a
-                        href={post.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 text-primary font-serif-display italic text-sm hover:gap-3 transition-all"
-                      >
-                        read on Substack <PencilLine weight="duotone" className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
-                </article>
-              ))}
-          {!substackLoading && !livePosts.length ? (
-            <div className="paper-card p-8 text-center">
-              <p className="font-serif-display italic text-muted-foreground">
-                {substackError ?? "No journal posts are available right now."}
-              </p>
-            </div>
-          ) : null}
+          {/* Search */}
+          <div className="max-w-md mx-auto mt-8 relative">
+            <MagnifyingGlass className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              placeholder="Search the journal..."
+              className="w-full pl-11 pr-5 py-3 rounded-full bg-card border border-border focus:border-primary focus:outline-none font-serif-display text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
         </div>
+      </section>
 
-        {/* Sidebar */}
-        <aside className="space-y-6">
-          <div className="paper-card p-6">
-            <span className="tag-chip">recent journal</span>
-            <ul className="mt-4 divide-y divide-border">
-              {substackLoading
-                ? Array.from({ length: 4 }, (_, index) => <RecentJournalSkeleton key={index} />)
-                : sidebarItems.map((j) => (
-                    <li key={j.id} className="py-3">
-                      <a
-                        href={j.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-start gap-4 group"
-                      >
-                        <span className="font-hand text-2xl text-accent w-14 shrink-0">
-                          {formatJournalDate(j.publishedAt, false)}
-                        </span>
-                        <span className="font-serif-display text-foreground/85 group-hover:text-primary transition-colors">
-                          {j.title}
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-            </ul>
+      {/* Main Content */}
+      <section className="container-wide section-gap">
+        <div className="grid lg:grid-cols-[1fr_320px] gap-12">
+          {/* Posts List */}
+          <div className="space-y-6">
+            {substackLoading ? (
+              Array.from({ length: 5 }, (_, index) => <JournalPostSkeleton key={index} />)
+            ) : livePosts.length ? (
+              livePosts.map((post, index) => (
+                <JournalPostCard
+                  key={post.id}
+                  post={post}
+                  featured={index === 0}
+                  publicationName={substack?.publication?.name}
+                />
+              ))
+            ) : (
+              <div className="rounded-2xl border border-border bg-card p-12 text-center">
+                <BookOpenText weight="duotone" className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+                <p className="font-serif-display text-muted-foreground">
+                  {substackError ?? "No journal posts are available right now."}
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="paper-card p-6">
-            <span className="tag-chip gold">currently loving</span>
-            <ul className="mt-4 space-y-4 font-serif-display">
-              <CurrentlyLoving label="reading" item="The House in the Cerulean Sea" by="TJ Klune" />
-              <CurrentlyLoving
-                label="listening"
-                item="Hozier — Unreal Unearth"
-                by="on repeat, again"
+          {/* Sidebar */}
+          <aside className="space-y-6">
+            {/* Recent Posts */}
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="font-sans-ui text-[0.6875rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-4">
+                Recent entries
+              </h3>
+              <ul className="space-y-4">
+                {substackLoading
+                  ? Array.from({ length: 5 }, (_, index) => <RecentJournalSkeleton key={index} />)
+                  : sidebarItems.map((post) => (
+                      <li key={post.id}>
+                        <a
+                          href={post.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group block"
+                        >
+                          <p className="font-serif-display text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                            {post.title}
+                          </p>
+                          <p className="mt-1 font-sans-ui text-xs text-muted-foreground">
+                            {formatJournalDate(post.publishedAt, false)}
+                          </p>
+                        </a>
+                      </li>
+                    ))}
+              </ul>
+            </div>
+
+            {/* Currently Loving */}
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="font-sans-ui text-[0.6875rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-4">
+                Currently loving
+              </h3>
+              <ul className="space-y-4">
+                <CurrentlyLoving 
+                  label="Reading" 
+                  item="The House in the Cerulean Sea" 
+                  by="TJ Klune" 
+                />
+                <CurrentlyLoving 
+                  label="Listening" 
+                  item="Hozier — Unreal Unearth" 
+                  by="On repeat" 
+                />
+                <CurrentlyLoving 
+                  label="Making" 
+                  item="A mossy granny square shawl" 
+                  by="Size: enormous" 
+                />
+                <CurrentlyLoving 
+                  label="Drinking" 
+                  item="Earl Grey + honey" 
+                  by="Always" 
+                />
+              </ul>
+            </div>
+
+            {/* Newsletter CTA */}
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
+              <h3 className="font-hand text-xl text-foreground">
+                Subscribe to the journal
+              </h3>
+              <p className="mt-2 font-serif-display text-sm text-muted-foreground">
+                Get new entries delivered to your inbox — no spam, just cozy notes.
+              </p>
+              <Link to="/about#contact" className="mt-4 btn-primary w-full justify-center text-sm">
+                Subscribe
+              </Link>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                 Components                                  */
+/* -------------------------------------------------------------------------- */
+
+function JournalPostCard({
+  post,
+  featured,
+  publicationName,
+}: {
+  post: SubstackFeed["items"][number];
+  featured?: boolean;
+  publicationName?: string;
+}) {
+  if (featured) {
+    return (
+      <article className="group rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="grid md:grid-cols-2">
+          <div className="relative aspect-[4/3] md:aspect-auto overflow-hidden bg-muted">
+            {post.imageUrl ? (
+              <img
+                src={post.imageUrl}
+                alt=""
+                loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <CurrentlyLoving label="watching" item="Studio Ghibli marathon" by="with the cat" />
-              <CurrentlyLoving
-                label="making"
-                item="A mossy granny square shawl"
-                by="size: enormous"
-              />
-              <CurrentlyLoving label="drinking" item="Earl Grey + a little honey" by="always" />
-            </ul>
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <BookOpenText weight="duotone" className="w-16 h-16 text-muted-foreground/20" />
+              </div>
+            )}
+            <span className="absolute top-4 left-4 cat-stamp">
+              <span className="dot" />
+              {getJournalTagLabel(post.title, post.tags[0] ?? publicationName ?? "Journal")}
+            </span>
           </div>
 
-          <div className="paper-card p-6">
-            <span className="tag-chip rose">leave a note</span>
-            <p className="font-serif-display italic text-muted-foreground mt-4">
-              "your stationery suggestions saved my journaling slump 💌"
+          <div className="p-6 md:p-8 flex flex-col">
+            <div className="flex items-center gap-2 text-xs font-sans-ui text-muted-foreground">
+              <span>{formatJournalDate(post.publishedAt)}</span>
+              <span className="text-border">·</span>
+              <span>{post.read}</span>
+            </div>
+
+            <h2 className="mt-3 font-hand text-3xl md:text-4xl text-foreground leading-tight group-hover:text-primary transition-colors">
+              {post.title}
+            </h2>
+
+            <p className="mt-4 font-serif-display text-muted-foreground leading-relaxed flex-1">
+              {post.excerpt}
             </p>
-            <p className="font-hand text-xl text-foreground mt-2">— Marigold W.</p>
+
             <a
-              href="#"
-              className="mt-6 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm"
+              href={post.url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 btn-link"
             >
-              <ChatText weight="duotone" className="w-4 h-4" /> read all comments
+              Read on Substack
+              <ArrowRight weight="bold" className="w-4 h-4" />
             </a>
           </div>
-        </aside>
+        </div>
+      </article>
+    );
+  }
+
+  return (
+    <article className="group rounded-2xl border border-border bg-card overflow-hidden transition-all hover:border-primary/50">
+      <div className="grid sm:grid-cols-[180px_1fr] md:grid-cols-[220px_1fr]">
+        <div className="relative aspect-video sm:aspect-auto overflow-hidden bg-muted">
+          {post.imageUrl ? (
+            <img
+              src={post.imageUrl}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <BookOpenText weight="duotone" className="w-10 h-10 text-muted-foreground/20" />
+            </div>
+          )}
+        </div>
+
+        <div className="p-5 flex flex-col">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-sans-ui text-[0.625rem] font-semibold uppercase tracking-wider text-primary">
+              {getJournalTagLabel(post.title, post.tags[0] ?? publicationName ?? "Journal")}
+            </span>
+            <span className="text-border">·</span>
+            <span className="font-sans-ui text-xs text-muted-foreground">
+              {formatJournalDate(post.publishedAt, false)}
+            </span>
+            <span className="text-border">·</span>
+            <span className="font-sans-ui text-xs text-muted-foreground">
+              {post.read}
+            </span>
+          </div>
+
+          <h2 className="mt-2 font-hand text-2xl text-foreground leading-tight group-hover:text-primary transition-colors">
+            {post.title}
+          </h2>
+
+          <p className="mt-2 font-serif-display text-sm text-muted-foreground line-clamp-2 flex-1">
+            {post.excerpt}
+          </p>
+
+          <a
+            href={post.url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 btn-link text-sm"
+          >
+            Read more
+            <ArrowRight weight="bold" className="w-3.5 h-3.5" />
+          </a>
+        </div>
       </div>
-    </main>
+    </article>
   );
 }
 
 function JournalPostSkeleton() {
   return (
-    <article className="paper-card overflow-hidden grid sm:grid-cols-[200px_1fr]">
-      <Skeleton className="h-48 sm:h-full min-h-48 rounded-none" />
-      <div className="p-6 flex flex-col">
-        <Skeleton className="h-6 w-24 rounded-full" />
-        <Skeleton className="h-8 w-4/5 mt-4" />
-        <Skeleton className="h-4 w-full mt-4" />
-        <Skeleton className="h-4 w-2/3 mt-2" />
-        <div className="flex items-center justify-between gap-4 mt-6">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-4 w-24" />
+    <article className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="grid sm:grid-cols-[180px_1fr] md:grid-cols-[220px_1fr]">
+        <Skeleton className="aspect-video sm:aspect-auto sm:min-h-[180px] rounded-none" />
+        <div className="p-5 space-y-3">
+          <Skeleton className="h-3 w-40" />
+          <Skeleton className="h-7 w-4/5" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-4 w-24 mt-2" />
         </div>
       </div>
     </article>
@@ -228,28 +332,21 @@ function JournalPostSkeleton() {
 
 function RecentJournalSkeleton() {
   return (
-    <li className="py-3">
-      <div className="flex items-start gap-4">
-        <Skeleton className="h-7 w-14 shrink-0" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
-        </div>
-      </div>
+    <li className="space-y-2">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-3 w-20" />
     </li>
   );
 }
 
 function CurrentlyLoving({ label, item, by }: { label: string; item: string; by: string }) {
   return (
-    <li className="flex gap-4 items-baseline">
-      <span className="font-serif-display italic text-xs text-muted-foreground w-20 shrink-0">
+    <li>
+      <p className="font-sans-ui text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
-      </span>
-      <div>
-        <p className="text-foreground italic">{item}</p>
-        <p className="text-xs text-muted-foreground font-serif-display italic">{by}</p>
-      </div>
+      </p>
+      <p className="mt-0.5 font-serif-display text-foreground">{item}</p>
+      <p className="font-serif-display text-sm text-muted-foreground">{by}</p>
     </li>
   );
 }

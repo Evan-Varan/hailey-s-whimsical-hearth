@@ -14,6 +14,7 @@ const navItems = [
 export function SiteHeader() {
   const [dark, setDark] = useState(false);
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const stored = typeof window !== "undefined" && localStorage.getItem("theme");
@@ -31,75 +32,102 @@ export function SiteHeader() {
     }
   }, [dark]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="relative z-30 border-b border-border/60 backdrop-blur-sm bg-background/70 sticky top-0">
-      <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between gap-6">
-        <Link to="/" className="group relative shrink-0 py-1 pr-3" aria-label="Hailey Adkins home">
-          <span className="relative inline-flex items-end">
-            <span className="font-hand text-[2.05rem] italic leading-[0.85] text-foreground transition-colors group-hover:text-primary">
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm" 
+          : "bg-transparent"
+      }`}
+    >
+      <div className="container-wide">
+        <div className="flex items-center justify-between h-16 md:h-20">
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="group relative flex items-baseline gap-2" 
+            aria-label="Hailey Adkins home"
+          >
+            <span className="font-hand text-2xl md:text-[1.75rem] text-foreground transition-colors group-hover:text-primary">
               Hailey
             </span>
-            <span className="mb-0.5 ml-1.5 font-serif-display text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-primary">
+            <span className="hidden sm:inline font-sans-ui text-[0.625rem] font-semibold uppercase tracking-[0.2em] text-primary/80">
               Adkins
             </span>
-            <span className="absolute -bottom-2 left-0 right-1 h-px bg-primary/45" aria-hidden>
-              <span className="absolute right-0 top-0 h-px w-5 bg-accent/80" />
-            </span>
-          </span>
-        </Link>
+          </Link>
 
-        <nav className="hidden md:flex items-center gap-8 font-serif-display italic text-[15px] text-muted-foreground">
-          {navItems.map((n) => (
-            <Link
-              key={n.to}
-              to={n.to}
-              activeOptions={{ exact: n.to === "/" }}
-              activeProps={{ className: "text-primary" }}
-              className="relative hover:text-primary transition-colors after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-px after:bg-current after:scale-x-0 hover:after:scale-x-100 after:origin-left after:transition-transform data-[status=active]:after:scale-x-100"
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((n) => (
+              <Link
+                key={n.to}
+                to={n.to}
+                activeOptions={{ exact: n.to === "/" }}
+                activeProps={{ className: "text-foreground bg-muted" }}
+                className="relative px-4 py-2 rounded-full font-sans-ui text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
+              >
+                {n.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1">
+            <button
+              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+              onClick={() => setDark((d) => !d)}
+              className="p-2.5 rounded-full hover:bg-muted transition-colors"
             >
-              {n.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-1">
-          <button
-            aria-label="Toggle dark mode"
-            onClick={() => setDark((d) => !d)}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
-          >
-            {dark ? (
-              <SunDim weight="duotone" className="w-4 h-4" />
-            ) : (
-              <Moon weight="duotone" className="w-4 h-4" />
-            )}
-          </button>
-          <button
-            aria-label="Menu"
-            className="md:hidden p-2 rounded-full hover:bg-muted transition-colors"
-            onClick={() => setOpen((o) => !o)}
-          >
-            {open ? <X className="w-4 h-4" /> : <List className="w-4 h-4" />}
-          </button>
+              {dark ? (
+                <SunDim weight="duotone" className="w-[18px] h-[18px]" />
+              ) : (
+                <Moon weight="duotone" className="w-[18px] h-[18px]" />
+              )}
+            </button>
+            <button
+              aria-label={open ? "Close menu" : "Open menu"}
+              className="md:hidden p-2.5 rounded-full hover:bg-muted transition-colors"
+              onClick={() => setOpen((o) => !o)}
+            >
+              {open ? (
+                <X weight="bold" className="w-[18px] h-[18px]" />
+              ) : (
+                <List weight="bold" className="w-[18px] h-[18px]" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      {open && (
-        <nav className="md:hidden border-t border-border/60 px-6 py-4 flex flex-col gap-3 font-serif-display italic text-foreground bg-background">
+      {/* Mobile Navigation */}
+      <div 
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
+          open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <nav className="container-wide pb-6 pt-2 flex flex-col gap-1 bg-background/95 backdrop-blur-md border-t border-border/50">
           {navItems.map((n) => (
             <Link
               key={n.to}
               to={n.to}
               onClick={() => setOpen(false)}
               activeOptions={{ exact: n.to === "/" }}
-              activeProps={{ className: "text-primary" }}
-              className="py-1"
+              activeProps={{ className: "text-foreground bg-muted" }}
+              className="px-4 py-3 rounded-xl font-sans-ui text-[0.9375rem] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
             >
               {n.label}
             </Link>
           ))}
         </nav>
-      )}
+      </div>
     </header>
   );
 }
