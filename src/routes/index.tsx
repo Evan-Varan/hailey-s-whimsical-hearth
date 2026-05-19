@@ -256,38 +256,74 @@ function Home() {
       </section>
 
       {/* Newsletter teaser */}
-      <section className="max-w-5xl mx-auto px-6 py-20">
-        <div className="paper-card p-10 md:p-16 text-center relative overflow-hidden">
-          <div
-            className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-secondary/40 blur-3xl"
-            aria-hidden
-          />
-          <div
-            className="absolute -bottom-12 -right-12 w-56 h-56 rounded-full bg-accent/30 blur-3xl"
-            aria-hidden
-          />
-          <Mailbox weight="duotone" className="w-6 h-6 text-accent mx-auto" />
-          <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-4">
-            Letters from the cottage
-          </h2>
-          <p className="font-serif-display italic text-lg text-muted-foreground mt-4 max-w-xl mx-auto">
-            One slow letter a month — tarot pulls, free patterns, what I'm reading, and small notes
-            from the woods.
-          </p>
-          <form
-            className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              required
-              placeholder="your email, gentle reader"
-              className="flex-1 px-5 py-3 rounded-full bg-card border border-border focus:border-primary focus:outline-none font-serif-display text-foreground placeholder:text-muted-foreground"
-            />
-            <button type="submit" className="btn-primary justify-center">
-              Subscribe <Feather weight="duotone" className="w-4 h-4" />
-            </button>
-          </form>
+      <section className="mt-28 mb-20 relative overflow-hidden px-6">
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full bg-accent/5 blur-[120px] -z-10"
+          aria-hidden
+        />
+
+        <div className="grid lg:grid-cols-[1fr_1.3fr] gap-12 items-center max-w-6xl mx-auto">
+          <div className="space-y-6">
+            <span className="tag-chip rose">stay in touch</span>
+            <h2 className="font-hand text-6xl md:text-7xl text-foreground leading-[0.9]">
+              Letters from the <span className="text-primary italic">cottage</span>
+            </h2>
+            <div className="font-serif-display text-lg text-muted-foreground space-y-4 max-w-md">
+              <p>
+                One slow letter a month — tarot pulls, free patterns, what I'm reading, and small
+                notes from the woods. No noise, just a little magic in your inbox.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-accent/60 pt-2">
+              <Sparkle weight="fill" className="w-3 h-3 animate-twinkle" />
+              <Sparkle
+                weight="fill"
+                className="w-2 h-2 animate-twinkle"
+                style={{ animationDelay: "1s" }}
+              />
+              <Sparkle
+                weight="fill"
+                className="w-3 h-3 animate-twinkle"
+                style={{ animationDelay: "0.5s" }}
+              />
+            </div>
+          </div>
+
+          <div className="paper-card p-1 relative overflow-hidden">
+            <div className="bg-card/50 p-8 md:p-12 rounded-[calc(var(--radius-2xl)-4px)] text-center sm:text-left">
+              <form
+                className="flex flex-col sm:flex-row gap-4"
+                onSubmit={(e) => e.preventDefault()}
+              >
+                <div className="flex-1">
+                  <label className="block text-left mb-2">
+                    <span className="font-sans-ui text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">
+                      Email address
+                    </span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="your email, gentle reader"
+                    className="contact-input w-full"
+                  />
+                </div>
+                <div className="sm:pt-6">
+                  <button type="submit" className="btn-primary w-full sm:w-auto px-8 py-3.5 group">
+                    Subscribe
+                    <Feather
+                      weight="duotone"
+                      className="w-4 h-4 transition-transform group-hover:rotate-12"
+                    />
+                  </button>
+                </div>
+              </form>
+              <p className="mt-4 font-serif-display italic text-sm text-muted-foreground">
+                Join 4.2k readers. Unsubscribe anytime.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     </main>

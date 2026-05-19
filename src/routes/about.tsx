@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BookOpenText, Envelope, InstagramLogo } from "@phosphor-icons/react";
+import {
+  ArrowRight,
+  BookOpenText,
+  Envelope,
+  EnvelopeOpen,
+  InstagramLogo,
+  PaperPlaneTilt,
+  Sparkle,
+} from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -197,95 +205,161 @@ function AboutPage() {
         <Fact label="best reached for" value="kind notes and collaborations" />
       </section>
 
-      <section id="contact" className="mt-16">
-        <div className="mx-auto max-w-3xl">
-          <div className="paper-card overflow-hidden">
-            <div className="border-b border-border bg-card/70 p-7 md:p-9">
-              <span className="tag-chip rose">send a note</span>
-              <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-4">Mail Hailey</h2>
-              <p className="font-serif-display italic text-muted-foreground mt-4 max-w-xl">
-                A quiet place for questions, kind replies, project notes, and collaboration ideas.
+      <section id="contact" className="mt-28 relative">
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full bg-accent/5 blur-[120px] -z-10"
+          aria-hidden
+        />
+
+        <div className="grid lg:grid-cols-[1fr_1.5fr] gap-12 items-start max-w-6xl mx-auto">
+          <div className="space-y-6 lg:sticky lg:top-12">
+            <span className="tag-chip rose">get in touch</span>
+            <h2 className="font-hand text-6xl md:text-7xl text-foreground leading-[0.9]">
+              Mail <span className="text-primary italic">Hailey</span>
+            </h2>
+            <div className="font-serif-display text-lg text-muted-foreground space-y-4 max-w-md">
+              <p>
+                Whether you have a question about a crochet pattern, a thought on a recent tarot
+                pull, or just want to share a piece of your day—my inbox is always open for kind
+                notes.
+              </p>
+              <p className="italic text-base">
+                I do my best to reply to everyone, usually over a morning cup of tea.
               </p>
             </div>
 
-            <form className="space-y-6 p-6 md:p-9" onSubmit={submitContact}>
-              <div className="space-y-5">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Field label="Your name">
-                    <input
-                      name="name"
-                      required
-                      className="contact-input"
-                      placeholder="Jane Reader"
-                    />
-                  </Field>
-                  <Field label="Email">
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      className="contact-input"
-                      placeholder="jane@example.com"
-                    />
-                  </Field>
-                </div>
-                <div className="grid sm:grid-cols-[0.8fr_1.2fr] gap-4">
-                  <Field label="Topic">
-                    <select name="topic" className="contact-input">
-                      <option>general note</option>
-                      <option>crochet</option>
-                      <option>tarot or astrology</option>
-                      <option>collaboration</option>
-                      <option>website issue</option>
-                    </select>
-                  </Field>
-                  <Field label="Subject">
-                    <input
-                      name="subject"
-                      required
-                      className="contact-input"
-                      placeholder="A small note from the internet"
-                    />
-                  </Field>
-                </div>
-                <Field label="Message">
-                  <textarea
-                    name="message"
-                    required
-                    rows={8}
-                    className="contact-input resize-none"
-                    placeholder="Write your note here..."
-                  />
-                </Field>
+            <div className="flex items-center gap-4 pt-4">
+              <div className="h-12 w-12 rounded-full bg-secondary/30 flex items-center justify-center text-secondary-foreground">
+                <EnvelopeOpen weight="duotone" className="w-6 h-6" />
               </div>
-
-              <div className="flex flex-col gap-4 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  {contactError ? (
-                    <p className="font-serif-display italic text-sm text-destructive">
-                      {contactError}
-                    </p>
-                  ) : null}
-                  {contactStatus === "sent" ? (
-                    <p className="font-serif-display italic text-sm text-primary">
-                      Your note was sent. Thank you for writing.
-                    </p>
-                  ) : null}
-                  {contactStatus === "draft" ? (
-                    <p className="font-serif-display italic text-sm text-primary">
-                      Your email draft is open. Send it from your mail app to finish.
-                    </p>
-                  ) : null}
-                </div>
-                <button
-                  type="submit"
-                  className="btn-ghost justify-center"
-                  disabled={contactStatus === "sending"}
+              <div className="text-sm font-serif-display">
+                <p className="text-muted-foreground">Prefer direct email?</p>
+                <a
+                  href="mailto:hello@haileyadkins.com"
+                  className="text-foreground hover:text-primary transition-colors"
                 >
-                  {contactStatus === "sending" ? "Sending..." : "Send note"}
-                </button>
+                  hello@haileyadkins.com
+                </a>
               </div>
-            </form>
+            </div>
+
+            <div className="flex items-center gap-2 text-accent/60 pt-2">
+              <Sparkle weight="fill" className="w-3 h-3 animate-twinkle" />
+              <Sparkle
+                weight="fill"
+                className="w-2 h-2 animate-twinkle"
+                style={{ animationDelay: "1s" }}
+              />
+              <Sparkle
+                weight="fill"
+                className="w-3 h-3 animate-twinkle"
+                style={{ animationDelay: "0.5s" }}
+              />
+            </div>
+          </div>
+
+          <div className="paper-card p-1 relative overflow-hidden">
+            <div className="bg-card/50 p-6 md:p-10 rounded-[calc(var(--radius-2xl)-4px)]">
+              {contactStatus === "sent" ? (
+                <div className="py-20 text-center space-y-4">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary mb-2">
+                    <PaperPlaneTilt weight="duotone" className="h-8 w-8" />
+                  </div>
+                  <h3 className="font-hand text-4xl text-foreground">Message sent!</h3>
+                  <p className="font-serif-display italic text-muted-foreground max-w-xs mx-auto">
+                    Thank you for reaching out. I've received your note and will get back to you as
+                    soon as I can.
+                  </p>
+                  <button
+                    onClick={() => setContactStatus("idle")}
+                    className="btn-ghost mt-6 text-sm"
+                  >
+                    Send another note
+                  </button>
+                </div>
+              ) : (
+                <form className="space-y-6" onSubmit={submitContact}>
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <Field label="Your name">
+                      <input
+                        name="name"
+                        required
+                        className="contact-input"
+                        placeholder="Jane Reader"
+                      />
+                    </Field>
+                    <Field label="Email address">
+                      <input
+                        name="email"
+                        type="email"
+                        required
+                        className="contact-input"
+                        placeholder="jane@example.com"
+                      />
+                    </Field>
+                  </div>
+                  <div className="grid sm:grid-cols-[0.8fr_1.2fr] gap-6">
+                    <Field label="Topic">
+                      <select name="topic" className="contact-input appearance-none bg-card">
+                        <option>general note</option>
+                        <option>crochet</option>
+                        <option>tarot or astrology</option>
+                        <option>collaboration</option>
+                        <option>website issue</option>
+                      </select>
+                    </Field>
+                    <Field label="Subject">
+                      <input
+                        name="subject"
+                        required
+                        className="contact-input"
+                        placeholder="A small note..."
+                      />
+                    </Field>
+                  </div>
+                  <Field label="Message">
+                    <textarea
+                      name="message"
+                      required
+                      rows={6}
+                      className="contact-input resize-none"
+                      placeholder="Write your note here..."
+                    />
+                  </Field>
+
+                  <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-h-[1.5rem]">
+                      {contactError ? (
+                        <p className="font-serif-display italic text-sm text-destructive">
+                          {contactError}
+                        </p>
+                      ) : contactStatus === "draft" ? (
+                        <p className="font-serif-display italic text-sm text-primary">
+                          Email draft opened in your mail app.
+                        </p>
+                      ) : null}
+                    </div>
+                    <button
+                      type="submit"
+                      className="btn-primary justify-center px-8 py-3.5 group"
+                      disabled={contactStatus === "sending"}
+                    >
+                      {contactStatus === "sending" ? (
+                        "Sending..."
+                      ) : (
+                        <>
+                          Send note
+                          <PaperPlaneTilt
+                            weight="duotone"
+                            className="w-4 h-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+                          />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -295,8 +369,8 @@ function AboutPage() {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block">
-      <span className="font-sans-ui text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+    <label className="block group">
+      <span className="font-sans-ui text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70 transition-colors group-focus-within:text-primary">
         {label}
       </span>
       <span className="mt-2 block">{children}</span>

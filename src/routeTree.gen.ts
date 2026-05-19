@@ -26,6 +26,7 @@ import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiAstrologyTransitsRouteImport } from './routes/api/astrology-transits'
 import { Route as ApiAnimalFactRouteImport } from './routes/api/animal-fact'
 import { Route as ApiSpotifyTopTracksRouteImport } from './routes/api/spotify/top-tracks'
+import { Route as ApiSpotifyRecentlyPlayedRouteImport } from './routes/api/spotify/recently-played'
 import { Route as ApiSpotifyNowPlayingRouteImport } from './routes/api/spotify/now-playing'
 
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -113,6 +114,12 @@ const ApiSpotifyTopTracksRoute = ApiSpotifyTopTracksRouteImport.update({
   path: '/api/spotify/top-tracks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSpotifyRecentlyPlayedRoute =
+  ApiSpotifyRecentlyPlayedRouteImport.update({
+    id: '/api/spotify/recently-played',
+    path: '/api/spotify/recently-played',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSpotifyNowPlayingRoute = ApiSpotifyNowPlayingRouteImport.update({
   id: '/api/spotify/now-playing',
   path: '/api/spotify/now-playing',
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
+  '/api/spotify/recently-played': typeof ApiSpotifyRecentlyPlayedRoute
   '/api/spotify/top-tracks': typeof ApiSpotifyTopTracksRoute
 }
 export interface FileRoutesByTo {
@@ -157,6 +165,7 @@ export interface FileRoutesByTo {
   '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
+  '/api/spotify/recently-played': typeof ApiSpotifyRecentlyPlayedRoute
   '/api/spotify/top-tracks': typeof ApiSpotifyTopTracksRoute
 }
 export interface FileRoutesById {
@@ -178,6 +187,7 @@ export interface FileRoutesById {
   '/api/substack': typeof ApiSubstackRoute
   '/journal/$slug': typeof JournalSlugRoute
   '/api/spotify/now-playing': typeof ApiSpotifyNowPlayingRoute
+  '/api/spotify/recently-played': typeof ApiSpotifyRecentlyPlayedRoute
   '/api/spotify/top-tracks': typeof ApiSpotifyTopTracksRoute
 }
 export interface FileRouteTypes {
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/api/substack'
     | '/journal/$slug'
     | '/api/spotify/now-playing'
+    | '/api/spotify/recently-played'
     | '/api/spotify/top-tracks'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/api/substack'
     | '/journal/$slug'
     | '/api/spotify/now-playing'
+    | '/api/spotify/recently-played'
     | '/api/spotify/top-tracks'
   id:
     | '__root__'
@@ -240,6 +252,7 @@ export interface FileRouteTypes {
     | '/api/substack'
     | '/journal/$slug'
     | '/api/spotify/now-playing'
+    | '/api/spotify/recently-played'
     | '/api/spotify/top-tracks'
   fileRoutesById: FileRoutesById
 }
@@ -260,6 +273,7 @@ export interface RootRouteChildren {
   ApiPinterestRoute: typeof ApiPinterestRoute
   ApiSubstackRoute: typeof ApiSubstackRoute
   ApiSpotifyNowPlayingRoute: typeof ApiSpotifyNowPlayingRoute
+  ApiSpotifyRecentlyPlayedRoute: typeof ApiSpotifyRecentlyPlayedRoute
   ApiSpotifyTopTracksRoute: typeof ApiSpotifyTopTracksRoute
 }
 
@@ -384,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSpotifyTopTracksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/spotify/recently-played': {
+      id: '/api/spotify/recently-played'
+      path: '/api/spotify/recently-played'
+      fullPath: '/api/spotify/recently-played'
+      preLoaderRoute: typeof ApiSpotifyRecentlyPlayedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/spotify/now-playing': {
       id: '/api/spotify/now-playing'
       path: '/api/spotify/now-playing'
@@ -422,6 +443,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPinterestRoute: ApiPinterestRoute,
   ApiSubstackRoute: ApiSubstackRoute,
   ApiSpotifyNowPlayingRoute: ApiSpotifyNowPlayingRoute,
+  ApiSpotifyRecentlyPlayedRoute: ApiSpotifyRecentlyPlayedRoute,
   ApiSpotifyTopTracksRoute: ApiSpotifyTopTracksRoute,
 }
 export const routeTree = rootRouteImport

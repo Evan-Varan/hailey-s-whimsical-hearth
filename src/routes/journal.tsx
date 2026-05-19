@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { ChatText, MagnifyingGlass, PencilLine } from "@phosphor-icons/react";
+import { MagnifyingGlass, PencilLine } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,7 +53,7 @@ function JournalPage() {
     return () => controller.abort();
   }, []);
 
-  const livePosts = substack?.items ?? [];
+  const livePosts = useMemo(() => substack?.items ?? [], [substack?.items]);
   const sidebarItems = useMemo(() => livePosts.slice(0, 4), [livePosts]);
   const substackLoading = substack === undefined && !substackError;
 
@@ -145,62 +145,62 @@ function JournalPage() {
 
         {/* Sidebar */}
         <aside className="space-y-6">
-          <div className="paper-card p-6">
-            <span className="tag-chip">recent journal</span>
-            <ul className="mt-4 divide-y divide-border">
+          <div className="paper-card overflow-hidden">
+            <div className="border-b border-border p-6">
+              <span className="tag-chip">recent journal</span>
+              <h2 className="font-hand text-4xl text-foreground mt-3">Fresh from Substack</h2>
+              <p className="font-serif-display italic text-sm text-muted-foreground mt-2">
+                The newest notes, pulled in live.
+              </p>
+            </div>
+            <div className="divide-y divide-border">
               {substackLoading
                 ? Array.from({ length: 4 }, (_, index) => <RecentJournalSkeleton key={index} />)
                 : sidebarItems.map((j) => (
-                    <li key={j.id} className="py-3">
+                    <article key={j.id} className="p-4">
                       <a
                         href={j.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-start gap-4 group"
+                        className="group grid grid-cols-[76px_1fr] gap-4"
                       >
-                        <span className="font-hand text-2xl text-accent w-14 shrink-0">
-                          {formatJournalDate(j.publishedAt, false)}
+                        <span className="relative overflow-hidden rounded-xl bg-muted">
+                          {j.imageUrl ? (
+                            <img
+                              src={j.imageUrl}
+                              alt=""
+                              loading="lazy"
+                              className="aspect-square h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <span className="block aspect-square" />
+                          )}
                         </span>
-                        <span className="font-serif-display text-foreground/85 group-hover:text-primary transition-colors">
-                          {j.title}
+                        <span className="min-w-0">
+                          <span className="font-serif-display italic text-xs text-muted-foreground">
+                            {formatJournalDate(j.publishedAt, false)} · {j.read}
+                          </span>
+                          <span className="mt-1 line-clamp-2 font-serif-display text-foreground/90 transition-colors group-hover:text-primary">
+                            {j.title}
+                          </span>
+                          <span className="mt-1 line-clamp-2 font-serif-display italic text-xs text-muted-foreground">
+                            {j.excerpt}
+                          </span>
                         </span>
                       </a>
-                    </li>
+                    </article>
                   ))}
-            </ul>
-          </div>
-
-          <div className="paper-card p-6">
-            <span className="tag-chip gold">currently loving</span>
-            <ul className="mt-4 space-y-4 font-serif-display">
-              <CurrentlyLoving label="reading" item="The House in the Cerulean Sea" by="TJ Klune" />
-              <CurrentlyLoving
-                label="listening"
-                item="Hozier — Unreal Unearth"
-                by="on repeat, again"
-              />
-              <CurrentlyLoving label="watching" item="Studio Ghibli marathon" by="with the cat" />
-              <CurrentlyLoving
-                label="making"
-                item="A mossy granny square shawl"
-                by="size: enormous"
-              />
-              <CurrentlyLoving label="drinking" item="Earl Grey + a little honey" by="always" />
-            </ul>
-          </div>
-
-          <div className="paper-card p-6">
-            <span className="tag-chip rose">leave a note</span>
-            <p className="font-serif-display italic text-muted-foreground mt-4">
-              "your stationery suggestions saved my journaling slump 💌"
-            </p>
-            <p className="font-hand text-xl text-foreground mt-2">— Marigold W.</p>
-            <a
-              href="#"
-              className="mt-6 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm"
-            >
-              <ChatText weight="duotone" className="w-4 h-4" /> read all comments
-            </a>
+            </div>
+            <div className="border-t border-border p-5">
+              <a
+                href={substack?.publication?.url ?? "https://substack.com"}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-primary font-serif-display italic text-sm hover:gap-3 transition-all"
+              >
+                open Substack <PencilLine weight="duotone" className="w-3 h-3" />
+              </a>
+            </div>
           </div>
         </aside>
       </div>
@@ -228,28 +228,16 @@ function JournalPostSkeleton() {
 
 function RecentJournalSkeleton() {
   return (
-    <li className="py-3">
-      <div className="flex items-start gap-4">
-        <Skeleton className="h-7 w-14 shrink-0" />
-        <div className="flex-1 space-y-2">
+    <div className="p-4">
+      <div className="grid grid-cols-[76px_1fr] gap-4">
+        <Skeleton className="aspect-square rounded-xl" />
+        <div className="min-w-0 space-y-2">
+          <Skeleton className="h-3 w-28" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-3 w-4/5" />
         </div>
       </div>
-    </li>
-  );
-}
-
-function CurrentlyLoving({ label, item, by }: { label: string; item: string; by: string }) {
-  return (
-    <li className="flex gap-4 items-baseline">
-      <span className="font-serif-display italic text-xs text-muted-foreground w-20 shrink-0">
-        {label}
-      </span>
-      <div>
-        <p className="text-foreground italic">{item}</p>
-        <p className="text-xs text-muted-foreground font-serif-display italic">{by}</p>
-      </div>
-    </li>
+    </div>
   );
 }

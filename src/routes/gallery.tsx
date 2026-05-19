@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  ArrowRight,
   ArrowSquareOut,
   InstagramLogo,
   MusicNotes,
@@ -69,6 +70,12 @@ type SpotifyTopTracks = {
   error?: string;
 };
 
+type SpotifyRecentlyPlayed = {
+  configured: boolean;
+  items: SpotifyTrack[];
+  error?: string;
+};
+
 type PinterestFeed = {
   configured: boolean;
   items: Array<{
@@ -86,19 +93,26 @@ function GalleryPage() {
   const [instagram, setInstagram] = useState<InstagramFeed>();
   const [nowPlaying, setNowPlaying] = useState<SpotifyNowPlaying>();
   const [topTracks, setTopTracks] = useState<SpotifyTopTracks>();
+  const [recentTracks, setRecentTracks] = useState<SpotifyRecentlyPlayed>();
   const [pinterest, setPinterest] = useState<PinterestFeed>();
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadSocialFeeds() {
-      const [instagramResult, nowPlayingResult, topTracksResult, pinterestResult] =
-        await Promise.allSettled([
-          fetchJson<InstagramFeed>("/api/instagram?view=carousel", controller.signal),
-          fetchJson<SpotifyNowPlaying>("/api/spotify/now-playing", controller.signal),
-          fetchJson<SpotifyTopTracks>("/api/spotify/top-tracks?limit=5", controller.signal),
-          fetchJson<PinterestFeed>("/api/pinterest?limit=8", controller.signal),
-        ]);
+      const [
+        instagramResult,
+        nowPlayingResult,
+        topTracksResult,
+        recentTracksResult,
+        pinterestResult,
+      ] = await Promise.allSettled([
+        fetchJson<InstagramFeed>("/api/instagram?view=carousel", controller.signal),
+        fetchJson<SpotifyNowPlaying>("/api/spotify/now-playing", controller.signal),
+        fetchJson<SpotifyTopTracks>("/api/spotify/top-tracks?limit=5", controller.signal),
+        fetchJson<SpotifyRecentlyPlayed>("/api/spotify/recently-played?limit=5", controller.signal),
+        fetchJson<PinterestFeed>("/api/pinterest?limit=8", controller.signal),
+      ]);
 
       if (controller.signal.aborted) return;
 
@@ -126,6 +140,15 @@ function GalleryPage() {
           configured: true,
           items: [],
           error: "Spotify tracks are unavailable right now.",
+        });
+      }
+
+      if (recentTracksResult.status === "fulfilled") setRecentTracks(recentTracksResult.value);
+      else {
+        setRecentTracks({
+          configured: true,
+          items: [],
+          error: "Recent tracks are unavailable right now.",
         });
       }
 
@@ -173,7 +196,10 @@ function GalleryPage() {
           showInstagram={showInstagram}
         />
 
-        <SpotifyPanel nowPlaying={nowPlaying} topTracks={topTracks} />
+        <div className="space-y-6">
+          <SpotifyPanel nowPlaying={nowPlaying} topTracks={topTracks} />
+          <RecentSpotifyPanel recentTracks={recentTracks} />
+        </div>
       </section>
 
       <PinterestPanel pinterest={pinterest} />
@@ -207,160 +233,172 @@ function InstagramSection({
   error: string | undefined;
   showInstagram: boolean;
 }) {
-  const [activePostIndex, setActivePostIndex] = useState(0);
-  const activePost = items[activePostIndex] ?? items[0];
-
-  useEffect(() => {
-    setActivePostIndex(0);
-  }, [items.length]);
-
   return (
-    <section className="paper-card overflow-hidden">
-      <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-        <div className="relative border-b border-border bg-muted/45 lg:border-b-0 lg:border-r">
-          {loading ? <InstagramFeatureSkeleton /> : null}
-          {showInstagram && activePost ? <InstagramPostFeature item={activePost} /> : null}
+    <div className="space-y-8">
+      <div className="flex items-end justify-between gap-4 border-b border-border pb-6">
+        <div>
+          <span className="tag-chip rose">instagram</span>
+          <h2 className="font-hand mt-2 text-4xl text-foreground md:text-5xl">
+            lately from Hailey
+          </h2>
+          <p className="mt-2 max-w-sm font-serif-display italic text-sm text-muted-foreground">
+            A little visual scrapbook of recent posts, carousels, and tiny camera-roll moments.
+          </p>
         </div>
-
-        <div className="flex min-h-0 flex-col p-6 md:p-8">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <span className="tag-chip rose">instagram</span>
-              <h2 className="font-hand mt-2 text-4xl text-foreground md:text-5xl">
-                lately from Hailey
-              </h2>
-              <p className="mt-2 max-w-sm font-serif-display italic text-sm text-muted-foreground">
-                A cleaner feed view for recent posts, carousels, and tiny camera-roll moments.
-              </p>
-            </div>
-            <InstagramLogo weight="duotone" className="h-6 w-6 shrink-0 text-primary" aria-hidden />
-          </div>
-
-          {loading ? (
-            <InstagramRailSkeleton />
-          ) : showInstagram ? (
-            <div className="mt-6 grid grid-cols-3 gap-3 lg:grid-cols-2 xl:grid-cols-3">
-              {items.map((item, index) => (
-                <InstagramPostThumb
-                  key={item.id}
-                  item={item}
-                  active={index === activePostIndex}
-                  onSelect={() => setActivePostIndex(index)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-8 rounded-2xl border border-border bg-card/70 p-5">
-              <p className="font-serif-display italic text-sm text-muted-foreground">
-                {!configured
-                  ? "Add an Instagram token to show Hailey's live feed here."
-                  : (error ?? "No Instagram posts are available right now.")}
-              </p>
-            </div>
-          )}
+        <div className="flex items-center gap-3">
+          <InstagramLogo weight="duotone" className="h-8 w-8 text-primary" aria-hidden />
         </div>
       </div>
-    </section>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <InstagramPostSkeleton key={i} />
+          ))}
+        </div>
+      ) : showInstagram ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+          {items.map((item) => (
+            <InstagramPostCard key={item.id} item={item} />
+          ))}
+        </div>
+      ) : (
+        <div className="paper-card p-12 text-center max-w-xl mx-auto">
+          <p className="font-serif-display italic text-lg text-muted-foreground">
+            {!configured
+              ? "Add an Instagram token to show Hailey's live feed here."
+              : (error ?? "No Instagram posts are available right now.")}
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
-function InstagramPostFeature({ item }: { item: InstagramFeed["items"][number] }) {
+function InstagramPostCard({ item }: { item: InstagramFeed["items"][number] }) {
   const visibleMedia = getVisibleMedia(item);
   const [activeIndex, setActiveIndex] = useState(0);
-  const activeMedia = visibleMedia[activeIndex] ?? visibleMedia[0];
   const hasMultipleMedia = visibleMedia.length > 1;
 
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [item.id]);
-
-  if (!activeMedia) return null;
-
   return (
-    <article>
-      <div className="group relative aspect-square overflow-hidden bg-muted">
-        <InstagramMedia media={activeMedia} caption={item.caption} fit="contain" />
+    <article className="paper-card group flex flex-col overflow-hidden h-full">
+      <div className="relative aspect-square bg-muted/30 overflow-hidden">
+        <div
+          className="absolute inset-0 flex transition-transform duration-500 ease-out"
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+        >
+          {visibleMedia.map((media, index) => (
+            <div key={media.id} className="min-w-full h-full relative">
+              <InstagramMedia media={media} caption={item.caption} />
+            </div>
+          ))}
+        </div>
+
+        {hasMultipleMedia ? (
+          <>
+            <div className="absolute inset-x-0 bottom-4 flex justify-center gap-1.5 z-10">
+              {visibleMedia.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveIndex(index)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    index === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
+                  }`}
+                  aria-label={`Go to media ${index + 1}`}
+                />
+              ))}
+            </div>
+            {activeIndex > 0 && (
+              <button
+                onClick={() => setActiveIndex(activeIndex - 1)}
+                className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-card/80 flex items-center justify-center text-foreground backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <span className="sr-only">Previous</span>
+                <ArrowRight weight="bold" className="w-4 h-4 rotate-180" />
+              </button>
+            )}
+            {activeIndex < visibleMedia.length - 1 && (
+              <button
+                onClick={() => setActiveIndex(activeIndex + 1)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-card/80 flex items-center justify-center text-foreground backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <span className="sr-only">Next</span>
+                <ArrowRight weight="bold" className="w-4 h-4" />
+              </button>
+            )}
+            <span className="absolute top-3 right-3 rounded-full bg-card/90 px-2 py-1 font-sans-ui text-[10px] uppercase tracking-[0.14em] text-foreground backdrop-blur">
+              {activeIndex + 1} / {visibleMedia.length}
+            </span>
+          </>
+        ) : null}
       </div>
 
-      <div className="border-t border-border bg-card/90 p-5 md:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="font-sans-ui text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+      <div className="p-6 md:p-8 flex flex-col flex-1">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <span className="font-sans-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
             {formatPostDate(item.timestamp)}
-          </p>
-          {hasMultipleMedia ? (
-            <p className="font-sans-ui text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              {activeIndex + 1} / {visibleMedia.length}
-            </p>
-          ) : null}
+          </span>
+          <a
+            href={item.permalink}
+            target="_blank"
+            rel="noreferrer"
+            className="text-muted-foreground hover:text-primary transition-colors"
+            title="View on Instagram"
+          >
+            <ArrowSquareOut weight="bold" className="w-4 h-4" />
+          </a>
         </div>
-        <p className="mt-3 line-clamp-4 font-serif-display italic text-base leading-7 text-foreground">
+
+        <p className="font-serif-display italic text-foreground leading-relaxed flex-1 whitespace-pre-wrap">
           {item.caption}
         </p>
-        {hasMultipleMedia ? (
-          <div className="mt-5 grid grid-cols-5 gap-2 sm:grid-cols-6">
-            {visibleMedia.map((mediaItem, index) => (
+
+        <div className="mt-8 pt-6 border-t border-border/50 flex items-center justify-between">
+          <div className="flex gap-1.5">
+            {visibleMedia.slice(0, 6).map((media, index) => (
               <button
-                key={mediaItem.id}
-                type="button"
-                className={`overflow-hidden rounded-xl border bg-muted transition ${
-                  index === activeIndex ? "border-primary" : "border-border hover:border-primary"
-                }`}
+                key={media.id}
                 onClick={() => setActiveIndex(index)}
-                aria-label={`Show Instagram image ${index + 1}`}
+                className={`w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${
+                  index === activeIndex
+                    ? "border-primary scale-110"
+                    : "border-transparent opacity-60 hover:opacity-100"
+                }`}
               >
-                <span className="block aspect-square">
-                  <InstagramMedia media={mediaItem} caption={item.caption} />
-                </span>
+                <InstagramMedia media={media} caption="" />
               </button>
             ))}
+            {visibleMedia.length > 6 && (
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center font-hand text-sm text-muted-foreground">
+                +{visibleMedia.length - 6}
+              </div>
+            )}
           </div>
-        ) : null}
-        <a
-          href={item.permalink}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-5 inline-flex font-serif-display italic text-sm text-primary underline-offset-4 hover:underline"
-        >
-          view on Instagram
-        </a>
+          <span className="font-hand text-primary/40 text-xl">✦</span>
+        </div>
       </div>
     </article>
   );
 }
 
-function InstagramPostThumb({
-  item,
-  active,
-  onSelect,
-}: {
-  item: InstagramFeed["items"][number];
-  active: boolean;
-  onSelect: () => void;
-}) {
-  const media = getVisibleMedia(item)[0];
-  if (!media) return null;
-
+function InstagramPostSkeleton() {
   return (
-    <button
-      type="button"
-      className={`group overflow-hidden rounded-2xl border bg-card/70 text-left transition ${
-        active ? "border-primary shadow-[var(--shadow-soft)]" : "border-border hover:border-primary"
-      }`}
-      onClick={onSelect}
-      aria-label={`Show Instagram post from ${formatPostDate(item.timestamp)}`}
-    >
-      <span className="relative block aspect-square overflow-hidden bg-muted">
-        <InstagramMedia media={media} caption={item.caption} />
-        {getVisibleMedia(item).length > 1 ? (
-          <span className="absolute bottom-2 right-2 rounded-full bg-card/90 px-2 py-1 font-sans-ui text-[10px] uppercase tracking-[0.14em] text-foreground backdrop-blur">
-            {getVisibleMedia(item).length}
-          </span>
-        ) : null}
-      </span>
-      <span className="block px-3 py-2 font-serif-display text-xs italic text-muted-foreground">
-        {formatPostDate(item.timestamp)}
-      </span>
-    </button>
+    <div className="paper-card overflow-hidden">
+      <Skeleton className="aspect-square rounded-none" />
+      <div className="p-8 space-y-4">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-4 w-2/3" />
+        <div className="pt-6 border-t border-border mt-4">
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <Skeleton className="h-10 w-10 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -517,6 +555,69 @@ function SpotifyPanel({
   );
 }
 
+function RecentSpotifyPanel({ recentTracks }: { recentTracks: SpotifyRecentlyPlayed | undefined }) {
+  const tracks = recentTracks?.items ?? [];
+  const loading = recentTracks === undefined;
+
+  return (
+    <aside className="paper-card p-6 md:p-8">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <span className="tag-chip rose">spotify</span>
+          <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-2">recent spins</h2>
+          <p className="font-serif-display italic text-sm text-muted-foreground mt-1">
+            the last few things I've listened to
+          </p>
+        </div>
+        <VinylRecord weight="duotone" className="w-6 h-6 text-primary" aria-hidden />
+      </div>
+
+      {loading ? (
+        <TopTracksSkeleton />
+      ) : tracks.length ? (
+        <ol className="mt-6 space-y-3">
+          {tracks.map((track, index) => (
+            <li key={track.id ?? track.spotifyUrl}>
+              <a
+                href={track.spotifyUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-muted"
+              >
+                <span className="font-hand text-2xl text-accent w-7 shrink-0">{index + 1}</span>
+                {track.imageUrl ? (
+                  <img
+                    src={track.imageUrl}
+                    alt=""
+                    className="h-11 w-11 rounded-lg object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-11 w-11 rounded-lg bg-muted grid place-items-center">
+                    <MusicNotes weight="duotone" className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                )}
+                <span className="min-w-0">
+                  <span className="block truncate font-serif-display italic text-foreground">
+                    {track.name}
+                  </span>
+                  <span className="block truncate font-serif-display italic text-sm text-muted-foreground">
+                    {track.artists.join(", ")}
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
+          {recentTracks?.error ?? "No recent tracks available."}
+        </p>
+      )}
+    </aside>
+  );
+}
+
 function PinterestPanel({ pinterest }: { pinterest: PinterestFeed | undefined }) {
   const loading = pinterest === undefined;
   const pins = pinterest?.items.filter((pin) => pin.imageUrl) ?? [];
@@ -598,34 +699,6 @@ function PinterestPinSkeleton() {
         <Skeleton className="h-4 w-4/5" />
         <Skeleton className="h-4 w-2/3" />
       </div>
-    </div>
-  );
-}
-
-function InstagramFeatureSkeleton() {
-  return (
-    <div>
-      <Skeleton className="aspect-square rounded-none" />
-      <div className="space-y-3 border-t border-border bg-card/90 p-5 md:p-6">
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-5 w-full" />
-        <Skeleton className="h-5 w-4/5" />
-      </div>
-    </div>
-  );
-}
-
-function InstagramRailSkeleton() {
-  return (
-    <div className="mt-6 grid grid-cols-3 gap-3 lg:grid-cols-2 xl:grid-cols-3" aria-hidden>
-      {Array.from({ length: 9 }, (_, index) => (
-        <div key={index} className="overflow-hidden rounded-2xl border border-border bg-card/70">
-          <Skeleton className="aspect-square rounded-none" />
-          <div className="p-3">
-            <Skeleton className="h-3 w-14" />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

@@ -38,7 +38,20 @@ export const Route = createFileRoute("/api/pinterest")({
     handlers: {
       GET: async ({ request }) => {
         try {
-          const accessToken = await getPinterestAccessToken();
+          let accessToken: string | null;
+          try {
+            accessToken = await getPinterestAccessToken();
+          } catch (error) {
+            console.error("Pinterest token refresh failed:", error);
+            return json(
+              {
+                configured: false,
+                items: [],
+                error: "Pinterest authentication failed. Please check your credentials.",
+              },
+              200,
+            );
+          }
 
           if (!accessToken) {
             return json(
@@ -59,6 +72,18 @@ export const Route = createFileRoute("/api/pinterest")({
               Accept: "application/json",
             },
           });
+
+          if (response.status === 401) {
+            return json(
+              {
+                configured: false,
+                items: [],
+                error: "Pinterest authentication expired or is invalid.",
+              },
+              200,
+            );
+          }
+
           const payload = (await response.json()) as PinterestPinsResponse;
 
           if (!response.ok) {
@@ -82,7 +107,7 @@ export const Route = createFileRoute("/api/pinterest")({
             },
           );
         } catch (error) {
-          console.error(error);
+          console.error("Pinterest API error:", error);
           const isPinterestApiError = error instanceof PinterestApiError;
 
           return json(
@@ -95,7 +120,7 @@ export const Route = createFileRoute("/api/pinterest")({
               status: isPinterestApiError ? error.status : undefined,
               code: isPinterestApiError ? error.code : undefined,
             },
-            502,
+            200, // Return 200 even on error to prevent bubbling up as a server failure
           );
         }
       },
