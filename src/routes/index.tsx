@@ -309,12 +309,6 @@ function Home() {
               Subscribe
             </button>
           </form>
-          
-          {/* <div className="mt-12 flex justify-center items-center gap-4">
-            <Sparkle weight="fill" className="w-4 h-4 text-accent animate-twinkle" />
-            <div className="font-marginalia text-xl text-primary/40">Join 4.2k gentle readers</div>
-            <Sparkle weight="fill" className="w-4 h-4 text-accent animate-twinkle" style={{ animationDelay: "1.5s" }} />
-          </div> */}
         </div>
       </section>
     </main>
