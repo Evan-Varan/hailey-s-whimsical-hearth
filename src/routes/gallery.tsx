@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowSquareOut,
-  CaretLeft,
-  CaretRight,
   InstagramLogo,
   MusicNotes,
   PinterestLogo,
@@ -96,11 +94,11 @@ function GalleryPage() {
     async function loadSocialFeeds() {
       const [instagramResult, nowPlayingResult, topTracksResult, pinterestResult] =
         await Promise.allSettled([
-        fetchJson<InstagramFeed>("/api/instagram?view=carousel", controller.signal),
-        fetchJson<SpotifyNowPlaying>("/api/spotify/now-playing", controller.signal),
-        fetchJson<SpotifyTopTracks>("/api/spotify/top-tracks?limit=5", controller.signal),
-        fetchJson<PinterestFeed>("/api/pinterest?limit=8", controller.signal),
-      ]);
+          fetchJson<InstagramFeed>("/api/instagram?view=carousel", controller.signal),
+          fetchJson<SpotifyNowPlaying>("/api/spotify/now-playing", controller.signal),
+          fetchJson<SpotifyTopTracks>("/api/spotify/top-tracks?limit=5", controller.signal),
+          fetchJson<PinterestFeed>("/api/pinterest?limit=8", controller.signal),
+        ]);
 
       if (controller.signal.aborted) return;
 
@@ -149,8 +147,7 @@ function GalleryPage() {
   const instagramItems =
     instagram?.items.filter(
       (item) =>
-        item.imageUrl ||
-        item.media?.some((mediaItem) => mediaItem.imageUrl || mediaItem.mediaUrl),
+        item.imageUrl || item.media?.some((mediaItem) => mediaItem.imageUrl || mediaItem.mediaUrl),
     ) ?? [];
   const showInstagram = Boolean(instagram?.configured && instagramItems.length);
   const instagramLoading = instagram === undefined;
@@ -168,33 +165,13 @@ function GalleryPage() {
       </div>
 
       <section className="grid lg:grid-cols-[minmax(0,1fr)_380px] gap-6 mt-14 items-start">
-        <div className="paper-card p-6 md:p-8">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <span className="tag-chip rose">instagram</span>
-              <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-2">
-                lately from Hailey
-              </h2>
-            </div>
-            <InstagramLogo weight="duotone" className="w-6 h-6 text-primary" aria-hidden />
-          </div>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
-            {instagramLoading ? <InstagramSkeleton /> : null}
-            {showInstagram
-              ? instagramItems.map((item) => <InstagramPostCard key={item.id} item={item} />)
-              : null}
-          </div>
-          {!instagramLoading && !instagram?.configured ? (
-            <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
-              Add an Instagram token to show Hailey's live feed here.
-            </p>
-          ) : null}
-          {!instagramLoading && instagram?.configured && !instagramItems.length ? (
-            <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
-              {instagram.error ?? "No Instagram posts are available right now."}
-            </p>
-          ) : null}
-        </div>
+        <InstagramSection
+          items={instagramItems}
+          loading={instagramLoading}
+          configured={instagram?.configured}
+          error={instagram?.error}
+          showInstagram={showInstagram}
+        />
 
         <SpotifyPanel nowPlaying={nowPlaying} topTracks={topTracks} />
       </section>
@@ -205,96 +182,185 @@ function GalleryPage() {
 }
 
 function getVisibleMedia(item: InstagramFeed["items"][number]) {
-  const media =
-    (item.media?.length ? item.media : undefined) ?? [
-      {
-        id: item.id,
-        imageUrl: item.imageUrl,
-        mediaUrl: item.imageUrl,
-        mediaType: item.mediaType,
-      },
-    ];
+  const media = (item.media?.length ? item.media : undefined) ?? [
+    {
+      id: item.id,
+      imageUrl: item.imageUrl,
+      mediaUrl: item.imageUrl,
+      mediaType: item.mediaType,
+    },
+  ];
 
   return media.filter((mediaItem) => mediaItem.imageUrl || mediaItem.mediaUrl);
 }
 
-function InstagramPostCard({ item }: { item: InstagramFeed["items"][number] }) {
+function InstagramSection({
+  items,
+  loading,
+  configured,
+  error,
+  showInstagram,
+}: {
+  items: InstagramFeed["items"];
+  loading: boolean;
+  configured: boolean | undefined;
+  error: string | undefined;
+  showInstagram: boolean;
+}) {
+  const [activePostIndex, setActivePostIndex] = useState(0);
+  const activePost = items[activePostIndex] ?? items[0];
+
+  useEffect(() => {
+    setActivePostIndex(0);
+  }, [items.length]);
+
+  return (
+    <section className="paper-card overflow-hidden">
+      <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+        <div className="relative border-b border-border bg-muted/45 lg:border-b-0 lg:border-r">
+          {loading ? <InstagramFeatureSkeleton /> : null}
+          {showInstagram && activePost ? <InstagramPostFeature item={activePost} /> : null}
+        </div>
+
+        <div className="flex min-h-0 flex-col p-6 md:p-8">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="tag-chip rose">instagram</span>
+              <h2 className="font-hand mt-2 text-4xl text-foreground md:text-5xl">
+                lately from Hailey
+              </h2>
+              <p className="mt-2 max-w-sm font-serif-display italic text-sm text-muted-foreground">
+                A cleaner feed view for recent posts, carousels, and tiny camera-roll moments.
+              </p>
+            </div>
+            <InstagramLogo weight="duotone" className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+          </div>
+
+          {loading ? (
+            <InstagramRailSkeleton />
+          ) : showInstagram ? (
+            <div className="mt-6 grid grid-cols-3 gap-3 lg:grid-cols-2 xl:grid-cols-3">
+              {items.map((item, index) => (
+                <InstagramPostThumb
+                  key={item.id}
+                  item={item}
+                  active={index === activePostIndex}
+                  onSelect={() => setActivePostIndex(index)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8 rounded-2xl border border-border bg-card/70 p-5">
+              <p className="font-serif-display italic text-sm text-muted-foreground">
+                {!configured
+                  ? "Add an Instagram token to show Hailey's live feed here."
+                  : (error ?? "No Instagram posts are available right now.")}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function InstagramPostFeature({ item }: { item: InstagramFeed["items"][number] }) {
   const visibleMedia = getVisibleMedia(item);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeMedia = visibleMedia[activeIndex] ?? visibleMedia[0];
   const hasMultipleMedia = visibleMedia.length > 1;
 
-  function showPrevious() {
-    setActiveIndex((current) => (current === 0 ? visibleMedia.length - 1 : current - 1));
-  }
-
-  function showNext() {
-    setActiveIndex((current) => (current + 1) % visibleMedia.length);
-  }
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [item.id]);
 
   if (!activeMedia) return null;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-card/70">
+    <article>
       <div className="group relative aspect-square overflow-hidden bg-muted">
-        <InstagramMedia media={activeMedia} caption={item.caption} />
+        <InstagramMedia media={activeMedia} caption={item.caption} fit="contain" />
+      </div>
 
+      <div className="border-t border-border bg-card/90 p-5 md:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="font-sans-ui text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            {formatPostDate(item.timestamp)}
+          </p>
+          {hasMultipleMedia ? (
+            <p className="font-sans-ui text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              {activeIndex + 1} / {visibleMedia.length}
+            </p>
+          ) : null}
+        </div>
+        <p className="mt-3 line-clamp-4 font-serif-display italic text-base leading-7 text-foreground">
+          {item.caption}
+        </p>
         {hasMultipleMedia ? (
-          <>
-            <button
-              type="button"
-              className="absolute left-2 top-1/2 z-20 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-card/85 text-foreground opacity-90 shadow-sm backdrop-blur transition-opacity hover:bg-card group-hover:opacity-100 sm:opacity-0 focus-visible:opacity-100"
-              onClick={showPrevious}
-              aria-label="Previous Instagram image"
-            >
-              <CaretLeft weight="bold" className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className="absolute right-2 top-1/2 z-20 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-card/85 text-foreground opacity-90 shadow-sm backdrop-blur transition-opacity hover:bg-card group-hover:opacity-100 sm:opacity-0 focus-visible:opacity-100"
-              onClick={showNext}
-              aria-label="Next Instagram image"
-            >
-              <CaretRight weight="bold" className="h-4 w-4" />
-            </button>
-            <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 gap-1.5 rounded-full bg-card/80 px-2 py-1 backdrop-blur">
-              {visibleMedia.map((mediaItem, index) => (
-                <button
-                  key={mediaItem.id}
-                  type="button"
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    index === activeIndex ? "bg-primary" : "bg-muted-foreground/35"
-                  }`}
-                  onClick={() => setActiveIndex(index)}
-                  aria-label={`Show Instagram image ${index + 1}`}
-                />
-              ))}
-            </div>
-          </>
+          <div className="mt-5 grid grid-cols-5 gap-2 sm:grid-cols-6">
+            {visibleMedia.map((mediaItem, index) => (
+              <button
+                key={mediaItem.id}
+                type="button"
+                className={`overflow-hidden rounded-xl border bg-muted transition ${
+                  index === activeIndex ? "border-primary" : "border-border hover:border-primary"
+                }`}
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Show Instagram image ${index + 1}`}
+              >
+                <span className="block aspect-square">
+                  <InstagramMedia media={mediaItem} caption={item.caption} />
+                </span>
+              </button>
+            ))}
+          </div>
         ) : null}
-
         <a
           href={item.permalink}
           target="_blank"
           rel="noreferrer"
-          className="absolute right-2 top-2 rounded-full bg-card/85 p-2 text-foreground backdrop-blur transition-colors hover:bg-card"
-          aria-label="Open Instagram post"
+          className="mt-5 inline-flex font-serif-display italic text-sm text-primary underline-offset-4 hover:underline"
         >
-          <ArrowSquareOut weight="bold" className="h-3.5 w-3.5" />
+          view on Instagram
         </a>
       </div>
-
-      <div className="space-y-2 p-4">
-        <p className="line-clamp-3 font-serif-display italic text-sm text-muted-foreground">
-          {item.caption}
-        </p>
-        {hasMultipleMedia ? (
-          <p className="font-sans-ui text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            {activeIndex + 1} / {visibleMedia.length}
-          </p>
-        ) : null}
-      </div>
     </article>
+  );
+}
+
+function InstagramPostThumb({
+  item,
+  active,
+  onSelect,
+}: {
+  item: InstagramFeed["items"][number];
+  active: boolean;
+  onSelect: () => void;
+}) {
+  const media = getVisibleMedia(item)[0];
+  if (!media) return null;
+
+  return (
+    <button
+      type="button"
+      className={`group overflow-hidden rounded-2xl border bg-card/70 text-left transition ${
+        active ? "border-primary shadow-[var(--shadow-soft)]" : "border-border hover:border-primary"
+      }`}
+      onClick={onSelect}
+      aria-label={`Show Instagram post from ${formatPostDate(item.timestamp)}`}
+    >
+      <span className="relative block aspect-square overflow-hidden bg-muted">
+        <InstagramMedia media={media} caption={item.caption} />
+        {getVisibleMedia(item).length > 1 ? (
+          <span className="absolute bottom-2 right-2 rounded-full bg-card/90 px-2 py-1 font-sans-ui text-[10px] uppercase tracking-[0.14em] text-foreground backdrop-blur">
+            {getVisibleMedia(item).length}
+          </span>
+        ) : null}
+      </span>
+      <span className="block px-3 py-2 font-serif-display text-xs italic text-muted-foreground">
+        {formatPostDate(item.timestamp)}
+      </span>
+    </button>
   );
 }
 
@@ -329,6 +395,16 @@ function InstagramMedia({
       className={`h-full w-full ${fitClass} transition-transform duration-700 group-hover:scale-105`}
     />
   );
+}
+
+function formatPostDate(timestamp: string) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "recent post";
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
 }
 
 function SpotifyPanel({
@@ -444,63 +520,67 @@ function SpotifyPanel({
 function PinterestPanel({ pinterest }: { pinterest: PinterestFeed | undefined }) {
   const loading = pinterest === undefined;
   const pins = pinterest?.items.filter((pin) => pin.imageUrl) ?? [];
+  const comingSoon = !loading && !pinterest?.configured;
 
   return (
     <section className="paper-card p-6 md:p-8 mt-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <span className="tag-chip rose">pinterest</span>
+          <span className="tag-chip rose">coming soon</span>
           <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-2">
-            saved inspiration
+            Pinterest inspiration
           </h2>
           <p className="font-serif-display italic text-sm text-muted-foreground mt-1">
-            recent pins from Hailey's Pinterest
+            a cozy board of saved ideas is on the way
           </p>
         </div>
         <PinterestLogo weight="duotone" className="w-6 h-6 text-primary" aria-hidden />
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        {loading
-          ? Array.from({ length: 8 }, (_, index) => <PinterestPinSkeleton key={index} />)
-          : pins.map((pin) => (
-              <a
-                key={pin.id}
-                href={pin.link}
-                target="_blank"
-                rel="noreferrer"
-                className="group overflow-hidden rounded-2xl border border-border bg-card/70"
-              >
-                <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-                  <img
-                    src={pin.imageUrl}
-                    alt={pin.title}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <span className="absolute right-2 top-2 rounded-full bg-card/85 p-2 text-foreground backdrop-blur">
-                    <ArrowSquareOut weight="bold" className="h-3.5 w-3.5" />
-                  </span>
-                </div>
-                <div className="p-4">
-                  <p className="line-clamp-2 font-serif-display italic text-foreground">
-                    {pin.title}
-                  </p>
-                  {pin.description ? (
-                    <p className="line-clamp-2 font-serif-display italic text-sm text-muted-foreground mt-2">
-                      {pin.description}
+      {comingSoon ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-border bg-card/70 p-6">
+          <p className="font-serif-display italic text-muted-foreground">
+            Hailey's favorite pins, projects, outfits, and home inspiration will live here soon.
+          </p>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          {loading
+            ? Array.from({ length: 8 }, (_, index) => <PinterestPinSkeleton key={index} />)
+            : pins.map((pin) => (
+                <a
+                  key={pin.id}
+                  href={pin.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group overflow-hidden rounded-2xl border border-border bg-card/70"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                    <img
+                      src={pin.imageUrl}
+                      alt={pin.title}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <span className="absolute right-2 top-2 rounded-full bg-card/85 p-2 text-foreground backdrop-blur">
+                      <ArrowSquareOut weight="bold" className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                  <div className="p-4">
+                    <p className="line-clamp-2 font-serif-display italic text-foreground">
+                      {pin.title}
                     </p>
-                  ) : null}
-                </div>
-              </a>
-            ))}
-      </div>
+                    {pin.description ? (
+                      <p className="line-clamp-2 font-serif-display italic text-sm text-muted-foreground mt-2">
+                        {pin.description}
+                      </p>
+                    ) : null}
+                  </div>
+                </a>
+              ))}
+        </div>
+      )}
 
-      {!loading && !pinterest?.configured ? (
-        <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
-          Add Pinterest credentials to show recent pins here.
-        </p>
-      ) : null}
       {!loading && pinterest?.configured && !pins.length ? (
         <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
           {pinterest.error ?? "No Pinterest pins are available right now."}
@@ -522,16 +602,32 @@ function PinterestPinSkeleton() {
   );
 }
 
-function InstagramSkeleton() {
-  return Array.from({ length: 9 }, (_, index) => (
-    <div key={index} className="overflow-hidden rounded-2xl border border-border bg-card/70">
-      <Skeleton className="aspect-square rounded-none bg-muted/70" aria-hidden />
-      <div className="space-y-2 p-4">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-2/3" />
+function InstagramFeatureSkeleton() {
+  return (
+    <div>
+      <Skeleton className="aspect-square rounded-none" />
+      <div className="space-y-3 border-t border-border bg-card/90 p-5 md:p-6">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-4/5" />
       </div>
     </div>
-  ));
+  );
+}
+
+function InstagramRailSkeleton() {
+  return (
+    <div className="mt-6 grid grid-cols-3 gap-3 lg:grid-cols-2 xl:grid-cols-3" aria-hidden>
+      {Array.from({ length: 9 }, (_, index) => (
+        <div key={index} className="overflow-hidden rounded-2xl border border-border bg-card/70">
+          <Skeleton className="aspect-square rounded-none" />
+          <div className="p-3">
+            <Skeleton className="h-3 w-14" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function NowPlayingSkeleton() {

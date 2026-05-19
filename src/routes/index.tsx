@@ -6,9 +6,14 @@ import {
   Feather,
   Images,
   Mailbox,
+  MoonStars,
   Notebook,
+  PinterestLogo,
   Planet,
+  Sparkle,
+  SunDim,
   UserCircle,
+  VinylRecord,
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -45,6 +50,11 @@ function Home() {
   const [substack, setSubstack] = useState<SubstackFeed>();
   const [substackError, setSubstackError] = useState<string>();
   const [instagramImages, setInstagramImages] = useState<InstagramHeroImage[]>([]);
+  const [spotifyNowPlaying, setSpotifyNowPlaying] = useState<SpotifyNowPlaying>();
+  const [spotifyTopTracks, setSpotifyTopTracks] = useState<SpotifyTopTracks>();
+  const [pinterest, setPinterest] = useState<PinterestFeed>();
+  const [animalFact, setAnimalFact] = useState<DailyAnimalFact>();
+  const [funFact, setFunFact] = useState<DailyFunFact>();
   const [heroImageIndex, setHeroImageIndex] = useState(0);
   const [heroImageQueue, setHeroImageQueue] = useState<number[]>([]);
   const liveFeatured = substack?.items.slice(0, 3) ?? [];
@@ -56,9 +66,22 @@ function Home() {
 
     async function loadHomeFeeds() {
       try {
-        const [substackResult, instagramResult] = await Promise.allSettled([
+        const [
+          substackResult,
+          instagramResult,
+          spotifyNowPlayingResult,
+          spotifyTopTracksResult,
+          pinterestResult,
+          animalFactResult,
+          funFactResult,
+        ] = await Promise.allSettled([
           fetchJson<SubstackFeed>("/api/substack", controller.signal),
           fetchJson<InstagramFeed>("/api/instagram?view=carousel", controller.signal),
+          fetchJson<SpotifyNowPlaying>("/api/spotify/now-playing", controller.signal),
+          fetchJson<SpotifyTopTracks>("/api/spotify/top-tracks?limit=1", controller.signal),
+          fetchJson<PinterestFeed>("/api/pinterest?limit=6", controller.signal),
+          fetchJson<DailyAnimalFact>("/api/animal-fact", controller.signal),
+          fetchJson<DailyFunFact>("/api/fun-fact", controller.signal),
         ]);
 
         if (controller.signal.aborted) return;
@@ -77,6 +100,16 @@ function Home() {
           setHeroImageQueue(queue.slice(1));
           setHeroImageIndex(queue[0] ?? 0);
         }
+
+        if (spotifyNowPlayingResult.status === "fulfilled") {
+          setSpotifyNowPlaying(spotifyNowPlayingResult.value);
+        }
+        if (spotifyTopTracksResult.status === "fulfilled") {
+          setSpotifyTopTracks(spotifyTopTracksResult.value);
+        }
+        if (pinterestResult.status === "fulfilled") setPinterest(pinterestResult.value);
+        if (animalFactResult.status === "fulfilled") setAnimalFact(animalFactResult.value);
+        if (funFactResult.status === "fulfilled") setFunFact(funFactResult.value);
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error(error);
@@ -212,34 +245,13 @@ function Home() {
         </div>
       </section>
 
-      {/* Quick wander */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
-        <SectionHeader eyebrow="wander a little" title="where to next?" />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-          <WanderCard
-            to="/journal"
-            title="Journal"
-            note="recent entries, slow notes, and small magic"
-            icon={<Notebook weight="duotone" className="w-5 h-5" />}
-          />
-          <WanderCard
-            to="/gallery"
-            title="Gallery"
-            note="a little visual scrapbook"
-            icon={<Images weight="duotone" className="w-5 h-5" />}
-          />
-          <WanderCard
-            to="/astrology"
-            title="Astrology"
-            note="daily readings, moon notes, rituals, and live transits"
-            icon={<Planet weight="duotone" className="w-5 h-5" />}
-          />
-          <WanderCard
-            to="/about"
-            title="About Hailey"
-            note="hello, friend — come in, sit by the fire"
-            icon={<UserCircle weight="duotone" className="w-5 h-5" />}
-          />
+      {/* Dashboard preview */}
+      <section className="max-w-7xl mx-auto px-6 py-14">
+        <SectionHeader eyebrow="dashboard" title="what's alive here" />
+        <div className="grid lg:grid-cols-6 gap-4 mt-10">
+          <SpotifyMiniPreview nowPlaying={spotifyNowPlaying} topTracks={spotifyTopTracks} />
+          <PinterestMiniPreview pinterest={pinterest} />
+          <FactsMiniPreview animalFact={animalFact} funFact={funFact} />
         </div>
       </section>
 
@@ -328,36 +340,141 @@ function getShuffledImages<T>(items: T[]) {
 }
 
 function AstrologyPreviewCard() {
+  const reading = getHomeAstrologyPreview();
+
   return (
     <Link to="/astrology" className="paper-card group overflow-hidden p-6 md:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <span className="tag-chip gold">astrology</span>
           <h3 className="font-hand text-4xl text-foreground mt-3">Daily astrology</h3>
+          <p className="font-serif-display italic text-sm text-muted-foreground mt-2">
+            {reading.date}
+          </p>
         </div>
         <Planet weight="duotone" className="h-8 w-8 text-primary" />
       </div>
 
-      <div className="mt-8 grid grid-cols-3 gap-3">
-        {["Sign", "Moon", "Ritual", "Focus", "Transits", "Forecast"].map((label) => (
-          <div key={label} className="rounded-xl border border-border bg-card/70 p-3 text-center">
-            <p className="font-sans-ui text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              {label}
-            </p>
-            <p className="font-hand text-2xl text-foreground mt-1">✦</p>
-          </div>
-        ))}
+      <div className="mt-8 grid sm:grid-cols-3 gap-3">
+        <AstrologyStat
+          icon={<SunDim weight="duotone" />}
+          label="today's sign"
+          value={reading.sign}
+          note={reading.tone}
+        />
+        <AstrologyStat
+          icon={<MoonStars weight="duotone" />}
+          label="moon"
+          value={reading.moonPhase}
+          note={reading.focus}
+        />
+        <AstrologyStat
+          icon={<Sparkle weight="duotone" />}
+          label="ritual"
+          value={reading.ritualTitle}
+          note={reading.ritual}
+        />
       </div>
 
       <p className="font-serif-display italic text-muted-foreground mt-6">
-        Pick your zodiac sign for a daily horoscope, moon phase, focus themes, small ritual, and
-        live planetary weather for the current sky.
+        Today's quick read leans toward <em>{reading.focus}</em>. The full page expands this into
+        your sign, live transits, a horoscope, and a longer ritual.
       </p>
       <span className="mt-5 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm group-hover:gap-3 transition-all">
         read the forecast <ArrowRight weight="bold" className="w-3 h-3" />
       </span>
     </Link>
   );
+}
+
+function AstrologyStat({
+  icon,
+  label,
+  value,
+  note,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card/70 p-3">
+      <div className="flex items-center gap-2 text-primary [&_svg]:h-4 [&_svg]:w-4">{icon}</div>
+      <p className="font-sans-ui text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-3">
+        {label}
+      </p>
+      <p className="font-hand text-2xl leading-none text-foreground mt-1">{value}</p>
+      <p className="line-clamp-2 font-serif-display italic text-xs text-muted-foreground mt-2">
+        {note}
+      </p>
+    </div>
+  );
+}
+
+function getHomeAstrologyPreview() {
+  const signs = [
+    { name: "Aries", tone: "begin again" },
+    { name: "Taurus", tone: "tend the body" },
+    { name: "Gemini", tone: "say the true thing" },
+    { name: "Cancer", tone: "come home to yourself" },
+    { name: "Leo", tone: "let warmth lead" },
+    { name: "Virgo", tone: "make one small order" },
+    { name: "Libra", tone: "choose harmony" },
+    { name: "Scorpio", tone: "trust the deep knowing" },
+    { name: "Sagittarius", tone: "follow the far light" },
+    { name: "Capricorn", tone: "build with patience" },
+    { name: "Aquarius", tone: "think wider" },
+    { name: "Pisces", tone: "soften the edges" },
+  ] as const;
+  const moonPhases = [
+    "new moon",
+    "waxing crescent",
+    "first quarter",
+    "waxing gibbous",
+    "full moon",
+    "waning gibbous",
+    "last quarter",
+    "waning crescent",
+  ];
+  const focuses = [
+    "home and roots",
+    "daily rituals",
+    "creative courage",
+    "friendship and belonging",
+    "work worth doing",
+    "rest and repair",
+    "clear agreements",
+    "care and enoughness",
+  ];
+  const rituals = [
+    { title: "candle note", text: "write one sentence before lighting a candle" },
+    { title: "clear surface", text: "reset one small table, shelf, or corner" },
+    { title: "tea pause", text: "let the first sip be the whole ceremony" },
+    { title: "soft yes", text: "choose one honest yes and one kind no" },
+    { title: "hands on earth", text: "touch yarn, soil, paper, or warm water" },
+    { title: "moon list", text: "name what can be released by evening" },
+  ];
+  const today = new Date();
+  const key = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  const seed = Array.from(key).reduce((total, char) => total + char.charCodeAt(0), 0);
+  const sign = signs[seed % signs.length];
+  const formatter = new Intl.DateTimeFormat("en", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+  const ritual = rituals[(seed + 3) % rituals.length];
+
+  return {
+    date: formatter.format(today),
+    sign: sign.name,
+    tone: sign.tone,
+    moonPhase: moonPhases[(seed + 2) % moonPhases.length],
+    focus: focuses[(seed + 4) % focuses.length],
+    ritualTitle: ritual.title,
+    ritual: ritual.text,
+  };
 }
 
 type InstagramFeed = {
@@ -378,6 +495,49 @@ type InstagramHeroImage = {
   mediaType?: string;
   caption?: string;
   timestamp?: string;
+};
+
+type SpotifyTrack = {
+  name: string;
+  artists: string[];
+  album: string;
+  imageUrl?: string;
+  spotifyUrl: string;
+  isPlaying?: boolean;
+};
+
+type SpotifyTopTracks = {
+  configured: boolean;
+  items: SpotifyTrack[];
+  error?: string;
+};
+
+type SpotifyNowPlaying = {
+  configured: boolean;
+  playing: SpotifyTrack | null;
+  error?: string;
+};
+
+type PinterestFeed = {
+  configured: boolean;
+  items: Array<{
+    id: string;
+    title: string;
+    imageUrl?: string;
+    link: string;
+  }>;
+  error?: string;
+};
+
+type DailyAnimalFact = {
+  name: string;
+  fact: string;
+  imageUrl?: string;
+};
+
+type DailyFunFact = {
+  fact: string;
+  imageUrl?: string;
 };
 
 function getInstagramHeroImages(feed: InstagramFeed) {
@@ -495,27 +655,137 @@ function JournalCardSkeleton() {
   );
 }
 
-function WanderCard({
-  to,
+function DashboardCard({
+  eyebrow,
   title,
-  note,
   icon,
+  to,
+  children,
 }: {
-  to: "/journal" | "/astrology" | "/gallery" | "/about";
+  eyebrow: string;
   title: string;
-  note: string;
   icon: React.ReactNode;
+  to: "/gallery" | "/astrology" | "/about" | "/animal-facts";
+  children: React.ReactNode;
 }) {
   return (
-    <Link to={to} className="paper-card p-8 group">
-      <div className="w-12 h-12 rounded-full bg-secondary/40 flex items-center justify-center text-forest dark:text-foreground group-hover:bg-accent/40 transition-colors">
-        {icon}
+    <Link
+      to={to}
+      className="group rounded-2xl border border-border bg-card/80 p-4 transition-colors hover:border-primary lg:col-span-2"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="font-sans-ui text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            {eyebrow}
+          </p>
+          <h3 className="font-hand text-3xl leading-none text-foreground mt-1">{title}</h3>
+        </div>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-secondary/40 text-forest transition-colors group-hover:bg-accent/40 dark:text-foreground">
+          {icon}
+        </span>
       </div>
-      <p className="font-hand text-4xl mt-4 text-foreground">{title}</p>
-      <p className="font-serif-display italic text-muted-foreground mt-2">{note}</p>
-      <span className="mt-6 inline-flex items-center gap-2 text-primary font-serif-display italic text-sm group-hover:gap-3 transition-all">
-        wander in <ArrowRight weight="bold" className="w-3 h-3" />
-      </span>
+      <div className="mt-4">{children}</div>
     </Link>
+  );
+}
+
+function SpotifyMiniPreview({
+  nowPlaying,
+  topTracks,
+}: {
+  nowPlaying: SpotifyNowPlaying | undefined;
+  topTracks: SpotifyTopTracks | undefined;
+}) {
+  const track = nowPlaying?.playing ?? topTracks?.items[0];
+  const title = nowPlaying?.playing?.isPlaying ? "currently listening" : "top song this month";
+
+  return (
+    <DashboardCard
+      eyebrow="spotify"
+      title={title}
+      to="/gallery"
+      icon={<VinylRecord weight="duotone" className="w-5 h-5" />}
+    >
+      {track ? (
+        <div className="flex items-center gap-3">
+          {track.imageUrl ? (
+            <img src={track.imageUrl} alt="" className="h-14 w-14 rounded-xl object-cover" />
+          ) : (
+            <div className="grid h-14 w-14 place-items-center rounded-xl bg-muted">
+              <VinylRecord weight="duotone" className="h-6 w-6 text-muted-foreground" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="truncate font-serif-display italic text-foreground">{track.name}</p>
+            <p className="truncate font-serif-display italic text-sm text-muted-foreground">
+              {track.artists.join(", ")}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <p className="font-serif-display italic text-sm text-muted-foreground">
+          {nowPlaying?.configured === false || topTracks?.configured === false
+            ? "Spotify can be connected here."
+            : "Top song is not showing yet."}
+        </p>
+      )}
+    </DashboardCard>
+  );
+}
+
+function PinterestMiniPreview({ pinterest }: { pinterest: PinterestFeed | undefined }) {
+  const pins = pinterest?.items.filter((pin) => pin.imageUrl).slice(0, 3) ?? [];
+  const comingSoon = pinterest?.configured === false;
+
+  return (
+    <DashboardCard
+      eyebrow="coming soon"
+      title={comingSoon ? "Pinterest inspiration" : "recent saves"}
+      to="/gallery"
+      icon={<PinterestLogo weight="duotone" className="w-5 h-5" />}
+    >
+      {comingSoon ? (
+        <p className="font-serif-display italic text-sm text-muted-foreground">
+          A peek at Hailey's saved ideas and favorite inspiration is coming soon.
+        </p>
+      ) : pins.length ? (
+        <div className="grid grid-cols-3 gap-1.5">
+          {pins.map((pin) => (
+            <img
+              key={pin.id}
+              src={pin.imageUrl}
+              alt={pin.title}
+              className="aspect-[3/4] rounded-lg object-cover"
+              loading="lazy"
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="font-serif-display italic text-sm text-muted-foreground">
+          Recent pins will appear here.
+        </p>
+      )}
+    </DashboardCard>
+  );
+}
+
+function FactsMiniPreview({
+  animalFact,
+  funFact,
+}: {
+  animalFact: DailyAnimalFact | undefined;
+  funFact: DailyFunFact | undefined;
+}) {
+  return (
+    <DashboardCard
+      eyebrow="facts"
+      title={animalFact?.name ?? "daily facts"}
+      to="/animal-facts"
+      icon={<Sparkle weight="duotone" className="w-5 h-5" />}
+    >
+      <p className="line-clamp-2 font-serif-display italic text-sm text-muted-foreground">
+        {animalFact?.fact ?? funFact?.fact ?? "Animal facts and general trivia load here daily."}
+      </p>
+    </DashboardCard>
   );
 }

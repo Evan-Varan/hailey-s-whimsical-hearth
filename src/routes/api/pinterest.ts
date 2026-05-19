@@ -22,6 +22,17 @@ type PinterestPinsResponse = {
   message?: string;
 };
 
+class PinterestApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public code?: number,
+  ) {
+    super(message);
+    this.name = "PinterestApiError";
+  }
+}
+
 export const Route = createFileRoute("/api/pinterest")({
   server: {
     handlers: {
@@ -51,7 +62,11 @@ export const Route = createFileRoute("/api/pinterest")({
           const payload = (await response.json()) as PinterestPinsResponse;
 
           if (!response.ok) {
-            throw new Error(payload.message ?? `Pinterest returned ${response.status}`);
+            throw new PinterestApiError(
+              payload.message ?? `Pinterest returned ${response.status}`,
+              response.status,
+              payload.code,
+            );
           }
 
           return json(
@@ -68,11 +83,17 @@ export const Route = createFileRoute("/api/pinterest")({
           );
         } catch (error) {
           console.error(error);
+          const isPinterestApiError = error instanceof PinterestApiError;
+
           return json(
             {
               configured: true,
               items: [],
-              error: "Pinterest pins are unavailable right now.",
+              error: isPinterestApiError
+                ? error.message
+                : "Pinterest pins are unavailable right now.",
+              status: isPinterestApiError ? error.status : undefined,
+              code: isPinterestApiError ? error.code : undefined,
             },
             502,
           );

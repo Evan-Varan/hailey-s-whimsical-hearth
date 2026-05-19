@@ -22,6 +22,7 @@ import { Route as ApiPinterestRouteImport } from './routes/api/pinterest'
 import { Route as ApiInstagramRouteImport } from './routes/api/instagram'
 import { Route as ApiHoroscopeRouteImport } from './routes/api/horoscope'
 import { Route as ApiFunFactRouteImport } from './routes/api/fun-fact'
+import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiAstrologyTransitsRouteImport } from './routes/api/astrology-transits'
 import { Route as ApiAnimalFactRouteImport } from './routes/api/animal-fact'
 import { Route as ApiSpotifyTopTracksRouteImport } from './routes/api/spotify/top-tracks'
@@ -92,6 +93,11 @@ const ApiFunFactRoute = ApiFunFactRouteImport.update({
   path: '/api/fun-fact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiContactRoute = ApiContactRouteImport.update({
+  id: '/api/contact',
+  path: '/api/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAstrologyTransitsRoute = ApiAstrologyTransitsRouteImport.update({
   id: '/api/astrology-transits',
   path: '/api/astrology-transits',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/api/animal-fact': typeof ApiAnimalFactRoute
   '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
   '/api/instagram': typeof ApiInstagramRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/api/animal-fact': typeof ApiAnimalFactRoute
   '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
   '/api/instagram': typeof ApiInstagramRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/api/animal-fact': typeof ApiAnimalFactRoute
   '/api/astrology-transits': typeof ApiAstrologyTransitsRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
   '/api/instagram': typeof ApiInstagramRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/api/animal-fact'
     | '/api/astrology-transits'
+    | '/api/contact'
     | '/api/fun-fact'
     | '/api/horoscope'
     | '/api/instagram'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/api/animal-fact'
     | '/api/astrology-transits'
+    | '/api/contact'
     | '/api/fun-fact'
     | '/api/horoscope'
     | '/api/instagram'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/api/animal-fact'
     | '/api/astrology-transits'
+    | '/api/contact'
     | '/api/fun-fact'
     | '/api/horoscope'
     | '/api/instagram'
@@ -241,6 +253,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ApiAnimalFactRoute: typeof ApiAnimalFactRoute
   ApiAstrologyTransitsRoute: typeof ApiAstrologyTransitsRoute
+  ApiContactRoute: typeof ApiContactRoute
   ApiFunFactRoute: typeof ApiFunFactRoute
   ApiHoroscopeRoute: typeof ApiHoroscopeRoute
   ApiInstagramRoute: typeof ApiInstagramRoute
@@ -343,6 +356,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFunFactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/contact': {
+      id: '/api/contact'
+      path: '/api/contact'
+      fullPath: '/api/contact'
+      preLoaderRoute: typeof ApiContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/astrology-transits': {
       id: '/api/astrology-transits'
       path: '/api/astrology-transits'
@@ -395,6 +415,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ApiAnimalFactRoute: ApiAnimalFactRoute,
   ApiAstrologyTransitsRoute: ApiAstrologyTransitsRoute,
+  ApiContactRoute: ApiContactRoute,
   ApiFunFactRoute: ApiFunFactRoute,
   ApiHoroscopeRoute: ApiHoroscopeRoute,
   ApiInstagramRoute: ApiInstagramRoute,

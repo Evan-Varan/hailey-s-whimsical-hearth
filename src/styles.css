@@ -281,6 +281,28 @@
     color: var(--color-primary);
   }
 
+  .contact-input {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-card) 88%, transparent);
+    padding: 0.85rem 1rem;
+    color: var(--color-foreground);
+    font-family: var(--font-serif);
+    font-style: italic;
+    outline: none;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .contact-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 18%, transparent);
+  }
+  .contact-input::placeholder {
+    color: var(--color-muted-foreground);
+  }
+
   .scallop-divider {
     height: 14px;
     background-image: radial-gradient(circle at 7px 0, var(--color-background) 7px, transparent 7px);
