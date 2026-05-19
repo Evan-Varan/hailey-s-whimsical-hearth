@@ -215,56 +215,126 @@ function InstagramSection({
   }, [items.length]);
 
   return (
-    <section className="paper-card overflow-hidden">
-      <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-        <div className="relative border-b border-border bg-muted/45 lg:border-b-0 lg:border-r">
-          {loading ? <InstagramFeatureSkeleton /> : null}
-          {showInstagram && activePost ? <InstagramPostFeature item={activePost} /> : null}
+    <section className="space-y-6">
+      {/* Header */}
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <span className="tag-chip rose">instagram</span>
+          <h2 className="font-hand mt-3 text-4xl text-foreground md:text-5xl">
+            lately from Hailey
+          </h2>
+          <p className="mt-2 max-w-md font-serif-display text-sm text-muted-foreground">
+            A cleaner feed view for recent posts, carousels, and tiny camera-roll moments.
+          </p>
         </div>
+        <a
+          href="https://instagram.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card hover:border-primary transition-colors"
+        >
+          <InstagramLogo weight="duotone" className="h-4 w-4 text-primary" />
+          <span className="font-sans-ui text-xs font-medium text-foreground">Follow</span>
+        </a>
+      </div>
 
-        <div className="flex min-h-0 flex-col p-6 md:p-8">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <span className="tag-chip rose">instagram</span>
-              <h2 className="font-hand mt-2 text-4xl text-foreground md:text-5xl">
-                lately from Hailey
-              </h2>
-              <p className="mt-2 max-w-sm font-serif-display italic text-sm text-muted-foreground">
-                A cleaner feed view for recent posts, carousels, and tiny camera-roll moments.
-              </p>
-            </div>
-            <InstagramLogo weight="duotone" className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+      {loading ? (
+        <InstagramGridSkeleton />
+      ) : showInstagram ? (
+        <>
+          {/* Masonry-style grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            {items.slice(0, 9).map((item, index) => (
+              <InstagramGridItem
+                key={item.id}
+                item={item}
+                index={index}
+                active={index === activePostIndex}
+                onSelect={() => setActivePostIndex(index)}
+              />
+            ))}
           </div>
 
-          {loading ? (
-            <InstagramRailSkeleton />
-          ) : showInstagram ? (
-            <div className="mt-6 grid grid-cols-3 gap-3 lg:grid-cols-2 xl:grid-cols-3">
-              {items.map((item, index) => (
-                <InstagramPostThumb
-                  key={item.id}
-                  item={item}
-                  active={index === activePostIndex}
-                  onSelect={() => setActivePostIndex(index)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-8 rounded-2xl border border-border bg-card/70 p-5">
-              <p className="font-serif-display italic text-sm text-muted-foreground">
-                {!configured
-                  ? "Add an Instagram token to show Hailey's live feed here."
-                  : (error ?? "No Instagram posts are available right now.")}
-              </p>
+          {/* Expanded post detail */}
+          {activePost && (
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+              <InstagramPostDetail item={activePost} />
             </div>
           )}
+        </>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
+          <InstagramLogo weight="duotone" className="h-10 w-10 text-muted-foreground/50 mx-auto mb-4" />
+          <p className="font-serif-display text-muted-foreground">
+            {!configured
+              ? "Add an Instagram token to show Hailey's live feed here."
+              : (error ?? "No Instagram posts are available right now.")}
+          </p>
         </div>
-      </div>
+      )}
     </section>
   );
 }
 
-function InstagramPostFeature({ item }: { item: InstagramFeed["items"][number] }) {
+function InstagramGridItem({
+  item,
+  index,
+  active,
+  onSelect,
+}: {
+  item: InstagramFeed["items"][number];
+  index: number;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  const media = getVisibleMedia(item)[0];
+  if (!media) return null;
+
+  // Create visual variety with different aspect ratios
+  const isLarge = index === 0 || index === 4;
+  const aspectClass = isLarge ? "aspect-[4/5]" : "aspect-square";
+
+  return (
+    <button
+      type="button"
+      className={`group relative overflow-hidden rounded-xl md:rounded-2xl text-left transition-all duration-300 ${
+        active 
+          ? "ring-2 ring-primary ring-offset-2 ring-offset-background" 
+          : "hover:ring-1 hover:ring-border"
+      } ${isLarge ? "md:row-span-2" : ""}`}
+      onClick={onSelect}
+      aria-label={`Show Instagram post from ${formatPostDate(item.timestamp)}`}
+    >
+      <div className={`relative ${aspectClass} overflow-hidden bg-muted`}>
+        <InstagramMedia media={media} caption={item.caption} />
+        
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        {/* Content on hover */}
+        <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <p className="font-serif-display text-xs md:text-sm text-white/90 line-clamp-2">
+            {item.caption}
+          </p>
+        </div>
+
+        {/* Carousel indicator */}
+        {getVisibleMedia(item).length > 1 && (
+          <span className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-sm px-2 py-1">
+            <span className="font-sans-ui text-[10px] text-white/90">{getVisibleMedia(item).length}</span>
+          </span>
+        )}
+
+        {/* Date badge */}
+        <span className="absolute top-2 left-2 rounded-full bg-card/90 backdrop-blur-sm px-2.5 py-1 font-sans-ui text-[10px] uppercase tracking-wider text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {formatPostDate(item.timestamp)}
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function InstagramPostDetail({ item }: { item: InstagramFeed["items"][number] }) {
   const visibleMedia = getVisibleMedia(item);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeMedia = visibleMedia[activeIndex] ?? visibleMedia[0];
@@ -277,36 +347,66 @@ function InstagramPostFeature({ item }: { item: InstagramFeed["items"][number] }
   if (!activeMedia) return null;
 
   return (
-    <article>
-      <div className="group relative aspect-square overflow-hidden bg-muted">
-        <InstagramMedia media={activeMedia} caption={item.caption} fit="contain" />
+    <div className="grid md:grid-cols-[1fr_1fr] lg:grid-cols-[1.2fr_0.8fr]">
+      {/* Media side */}
+      <div className="relative bg-muted">
+        <div className="aspect-square md:aspect-auto md:h-full overflow-hidden">
+          <InstagramMedia media={activeMedia} caption={item.caption} fit="contain" />
+        </div>
+        
+        {/* Media navigation dots */}
+        {hasMultipleMedia && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/40 backdrop-blur-sm">
+            {visibleMedia.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setActiveIndex(idx)}
+                className={`rounded-full transition-all duration-300 ${
+                  idx === activeIndex 
+                    ? 'w-5 h-1.5 bg-white' 
+                    : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/70'
+                }`}
+                aria-label={`Show image ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="border-t border-border bg-card/90 p-5 md:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="font-sans-ui text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+      {/* Content side */}
+      <div className="flex flex-col p-5 md:p-6 lg:p-8">
+        <div className="flex items-center justify-between gap-3 pb-4 border-b border-border">
+          <p className="font-sans-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             {formatPostDate(item.timestamp)}
           </p>
-          {hasMultipleMedia ? (
-            <p className="font-sans-ui text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          {hasMultipleMedia && (
+            <p className="font-sans-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
               {activeIndex + 1} / {visibleMedia.length}
             </p>
-          ) : null}
+          )}
         </div>
-        <p className="mt-3 line-clamp-4 font-serif-display italic text-base leading-7 text-foreground">
-          {item.caption}
-        </p>
-        {hasMultipleMedia ? (
-          <div className="mt-5 grid grid-cols-5 gap-2 sm:grid-cols-6">
+
+        <div className="flex-1 py-5">
+          <p className="font-serif-display text-foreground leading-relaxed">
+            {item.caption}
+          </p>
+        </div>
+
+        {/* Carousel thumbnails */}
+        {hasMultipleMedia && (
+          <div className="grid grid-cols-6 gap-2 pb-5">
             {visibleMedia.map((mediaItem, index) => (
               <button
                 key={mediaItem.id}
                 type="button"
-                className={`overflow-hidden rounded-xl border bg-muted transition ${
-                  index === activeIndex ? "border-primary" : "border-border hover:border-primary"
+                className={`overflow-hidden rounded-lg transition-all duration-200 ${
+                  index === activeIndex 
+                    ? "ring-2 ring-primary" 
+                    : "opacity-60 hover:opacity-100"
                 }`}
                 onClick={() => setActiveIndex(index)}
-                aria-label={`Show Instagram image ${index + 1}`}
+                aria-label={`Show image ${index + 1}`}
               >
                 <span className="block aspect-square">
                   <InstagramMedia media={mediaItem} caption={item.caption} />
@@ -314,53 +414,20 @@ function InstagramPostFeature({ item }: { item: InstagramFeed["items"][number] }
               </button>
             ))}
           </div>
-        ) : null}
+        )}
+
         <a
           href={item.permalink}
           target="_blank"
           rel="noreferrer"
-          className="mt-5 inline-flex font-serif-display italic text-sm text-primary underline-offset-4 hover:underline"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-sans-ui text-sm font-medium transition-all hover:shadow-[var(--shadow-glow)] hover:-translate-y-0.5"
         >
-          view on Instagram
+          <InstagramLogo weight="duotone" className="w-4 h-4" />
+          View on Instagram
+          <ArrowSquareOut weight="bold" className="w-3.5 h-3.5" />
         </a>
       </div>
-    </article>
-  );
-}
-
-function InstagramPostThumb({
-  item,
-  active,
-  onSelect,
-}: {
-  item: InstagramFeed["items"][number];
-  active: boolean;
-  onSelect: () => void;
-}) {
-  const media = getVisibleMedia(item)[0];
-  if (!media) return null;
-
-  return (
-    <button
-      type="button"
-      className={`group overflow-hidden rounded-2xl border bg-card/70 text-left transition ${
-        active ? "border-primary shadow-[var(--shadow-soft)]" : "border-border hover:border-primary"
-      }`}
-      onClick={onSelect}
-      aria-label={`Show Instagram post from ${formatPostDate(item.timestamp)}`}
-    >
-      <span className="relative block aspect-square overflow-hidden bg-muted">
-        <InstagramMedia media={media} caption={item.caption} />
-        {getVisibleMedia(item).length > 1 ? (
-          <span className="absolute bottom-2 right-2 rounded-full bg-card/90 px-2 py-1 font-sans-ui text-[10px] uppercase tracking-[0.14em] text-foreground backdrop-blur">
-            {getVisibleMedia(item).length}
-          </span>
-        ) : null}
-      </span>
-      <span className="block px-3 py-2 font-serif-display text-xs italic text-muted-foreground">
-        {formatPostDate(item.timestamp)}
-      </span>
-    </button>
+    </div>
   );
 }
 
@@ -602,30 +669,36 @@ function PinterestPinSkeleton() {
   );
 }
 
-function InstagramFeatureSkeleton() {
+function InstagramGridSkeleton() {
   return (
-    <div>
-      <Skeleton className="aspect-square rounded-none" />
-      <div className="space-y-3 border-t border-border bg-card/90 p-5 md:p-6">
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-5 w-full" />
-        <Skeleton className="h-5 w-4/5" />
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4" aria-hidden>
+        {Array.from({ length: 9 }, (_, index) => {
+          const isLarge = index === 0 || index === 4;
+          return (
+            <div 
+              key={index} 
+              className={`overflow-hidden rounded-xl md:rounded-2xl bg-muted ${isLarge ? "md:row-span-2" : ""}`}
+            >
+              <Skeleton className={`${isLarge ? "aspect-[4/5]" : "aspect-square"} rounded-none`} />
+            </div>
+          );
+        })}
       </div>
-    </div>
-  );
-}
-
-function InstagramRailSkeleton() {
-  return (
-    <div className="mt-6 grid grid-cols-3 gap-3 lg:grid-cols-2 xl:grid-cols-3" aria-hidden>
-      {Array.from({ length: 9 }, (_, index) => (
-        <div key={index} className="overflow-hidden rounded-2xl border border-border bg-card/70">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="grid md:grid-cols-2">
           <Skeleton className="aspect-square rounded-none" />
-          <div className="p-3">
-            <Skeleton className="h-3 w-14" />
+          <div className="p-6 lg:p-8 space-y-4">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-5 w-4/5" />
+            <Skeleton className="h-5 w-3/5" />
+            <div className="pt-4">
+              <Skeleton className="h-10 w-40 rounded-full" />
+            </div>
           </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
