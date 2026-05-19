@@ -20,6 +20,7 @@ import { Route as JournalSlugRouteImport } from './routes/journal.$slug'
 import { Route as ApiSubstackRouteImport } from './routes/api/substack'
 import { Route as ApiPinterestRouteImport } from './routes/api/pinterest'
 import { Route as ApiInstagramRouteImport } from './routes/api/instagram'
+import { Route as ApiImageRouteImport } from './routes/api/image'
 import { Route as ApiHoroscopeRouteImport } from './routes/api/horoscope'
 import { Route as ApiFunFactRouteImport } from './routes/api/fun-fact'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
@@ -84,6 +85,11 @@ const ApiInstagramRoute = ApiInstagramRouteImport.update({
   path: '/api/instagram',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiImageRoute = ApiImageRouteImport.update({
+  id: '/api/image',
+  path: '/api/image',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHoroscopeRoute = ApiHoroscopeRouteImport.update({
   id: '/api/horoscope',
   path: '/api/horoscope',
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/api/contact': typeof ApiContactRoute
   '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
+  '/api/image': typeof ApiImageRoute
   '/api/instagram': typeof ApiInstagramRoute
   '/api/pinterest': typeof ApiPinterestRoute
   '/api/substack': typeof ApiSubstackRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/api/contact': typeof ApiContactRoute
   '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
+  '/api/image': typeof ApiImageRoute
   '/api/instagram': typeof ApiInstagramRoute
   '/api/pinterest': typeof ApiPinterestRoute
   '/api/substack': typeof ApiSubstackRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/api/contact': typeof ApiContactRoute
   '/api/fun-fact': typeof ApiFunFactRoute
   '/api/horoscope': typeof ApiHoroscopeRoute
+  '/api/image': typeof ApiImageRoute
   '/api/instagram': typeof ApiInstagramRoute
   '/api/pinterest': typeof ApiPinterestRoute
   '/api/substack': typeof ApiSubstackRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/fun-fact'
     | '/api/horoscope'
+    | '/api/image'
     | '/api/instagram'
     | '/api/pinterest'
     | '/api/substack'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/fun-fact'
     | '/api/horoscope'
+    | '/api/image'
     | '/api/instagram'
     | '/api/pinterest'
     | '/api/substack'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/fun-fact'
     | '/api/horoscope'
+    | '/api/image'
     | '/api/instagram'
     | '/api/pinterest'
     | '/api/substack'
@@ -269,6 +281,7 @@ export interface RootRouteChildren {
   ApiContactRoute: typeof ApiContactRoute
   ApiFunFactRoute: typeof ApiFunFactRoute
   ApiHoroscopeRoute: typeof ApiHoroscopeRoute
+  ApiImageRoute: typeof ApiImageRoute
   ApiInstagramRoute: typeof ApiInstagramRoute
   ApiPinterestRoute: typeof ApiPinterestRoute
   ApiSubstackRoute: typeof ApiSubstackRoute
@@ -356,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInstagramRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/image': {
+      id: '/api/image'
+      path: '/api/image'
+      fullPath: '/api/image'
+      preLoaderRoute: typeof ApiImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/horoscope': {
       id: '/api/horoscope'
       path: '/api/horoscope'
@@ -439,6 +459,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiContactRoute: ApiContactRoute,
   ApiFunFactRoute: ApiFunFactRoute,
   ApiHoroscopeRoute: ApiHoroscopeRoute,
+  ApiImageRoute: ApiImageRoute,
   ApiInstagramRoute: ApiInstagramRoute,
   ApiPinterestRoute: ApiPinterestRoute,
   ApiSubstackRoute: ApiSubstackRoute,

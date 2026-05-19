@@ -8,6 +8,8 @@ type ContactPayload = {
   topic?: string;
 };
 
+const DEFAULT_CONTACT_EMAIL = "haileyliz1130@gmail.com";
+
 export const Route = createFileRoute("/api/contact")({
   server: {
     handlers: {
@@ -19,10 +21,10 @@ export const Route = createFileRoute("/api/contact")({
           return json({ ok: false, error: contact.error }, 400);
         }
 
-        const recipient = getEnv("CONTACT_EMAIL") || "hello@example.com";
+        const recipient = getEnv("CONTACT_EMAIL") || DEFAULT_CONTACT_EMAIL;
         const resendApiKey = getEnv("RESEND_API_KEY");
 
-        if (!resendApiKey || recipient === "hello@example.com") {
+        if (!resendApiKey) {
           return json({
             ok: true,
             configured: false,

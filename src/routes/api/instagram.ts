@@ -20,20 +20,10 @@ type InstagramChildMedia = {
   thumbnail_url?: string;
 };
 
-type InstagramResponse = {
-  data?: InstagramMedia[];
-  paging?: {
-    next?: string;
-  };
-  error?: {
-    message?: string;
-  };
-};
-
 export const Route = createFileRoute("/api/instagram")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         const accessToken = getEnv("INSTAGRAM_ACCESS_TOKEN");
 
         if (!accessToken) {
@@ -47,6 +37,10 @@ export const Route = createFileRoute("/api/instagram")({
           );
         }
 
+        const url = new URL(request.url);
+        const cursor = url.searchParams.get("cursor");
+        const limit = normalizeLimit(url.searchParams.get("limit"));
+
         const fields = [
           "id",
           "caption",
@@ -58,16 +52,28 @@ export const Route = createFileRoute("/api/instagram")({
           "timestamp",
         ].join(",");
 
+        const baseUrl = `https://graph.instagram.com/me/media?fields=${fields}&limit=${limit}&access_token=${accessToken}`;
+        const fetchUrl = cursor ? `${baseUrl}&after=${cursor}` : baseUrl;
+
         try {
-          const media = await fetchInstagramMedia(
-            `https://graph.instagram.com/me/media?fields=${fields}&limit=25&access_token=${accessToken}`,
-          );
+          const response = await fetch(fetchUrl, {
+            headers: {
+              Accept: "application/json",
+            },
+          });
+          const payload = (await response.json()) as InstagramResponse;
+
+          if (!response.ok || payload.error) {
+            throw new Error(payload.error?.message ?? `Instagram returned ${response.status}`);
+          }
 
           return json(
             {
               configured: true,
               source: "instagram",
-              items: media.map(mapInstagramMedia),
+              items: (payload.data ?? []).map(mapInstagramMedia),
+              nextCursor: payload.paging?.cursors?.after ?? null,
+              hasMore: Boolean(payload.paging?.next),
             },
             200,
             {
@@ -90,56 +96,80 @@ export const Route = createFileRoute("/api/instagram")({
   },
 });
 
-async function fetchInstagramMedia(firstUrl: string) {
-  const items: InstagramMedia[] = [];
-  let nextUrl: string | undefined = firstUrl;
-  let pageCount = 0;
-
-  while (nextUrl && pageCount < 10) {
-    const response = await fetch(nextUrl, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    const payload = (await response.json()) as InstagramResponse;
-
-    if (!response.ok || payload.error) {
-      throw new Error(payload.error?.message ?? `Instagram returned ${response.status}`);
-    }
-
-    items.push(...(payload.data ?? []));
-    nextUrl = payload.paging?.next;
-    pageCount += 1;
-  }
-
-  return items;
-}
+type InstagramResponse = {
+  data?: InstagramMedia[];
+  paging?: {
+    next?: string;
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+  };
+  error?: {
+    message?: string;
+  };
+};
 
 function mapInstagramMedia(item: InstagramMedia) {
   const childMedia =
-    item.children?.data?.map((child) => ({
-      id: child.id,
-      imageUrl: child.thumbnail_url ?? child.media_url,
-      mediaUrl: child.media_url,
-      mediaType: child.media_type,
-    })) ?? [];
+    item.children?.data?.map((child) =>
+      mapMediaItem({
+        id: child.id,
+        mediaType: child.media_type,
+        mediaUrl: child.media_url,
+        thumbnailUrl: child.thumbnail_url,
+      }),
+    ) ?? [];
   const fallbackMedia = {
     id: item.id,
-    imageUrl: item.thumbnail_url ?? item.media_url,
-    mediaUrl: item.media_url,
+    imageUrl: getOptimizedImageUrl(item.thumbnail_url ?? item.media_url, 900),
     mediaType: item.media_type,
+    thumbnailUrl: getOptimizedImageUrl(item.thumbnail_url ?? item.media_url, 180, 64),
   };
   const media = childMedia.length ? childMedia : [fallbackMedia];
 
   return {
     id: item.id,
     caption: item.caption ?? "Instagram post",
-    imageUrl: item.thumbnail_url ?? item.media_url,
+    imageUrl: getOptimizedImageUrl(item.thumbnail_url ?? item.media_url, 900),
     mediaType: item.media_type,
     media,
     permalink: item.permalink,
     timestamp: item.timestamp,
   };
+}
+
+function mapMediaItem({
+  id,
+  mediaType,
+  mediaUrl,
+  thumbnailUrl,
+}: {
+  id: string;
+  mediaType: "IMAGE" | "VIDEO";
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+}) {
+  const posterUrl = thumbnailUrl ?? mediaUrl;
+
+  return {
+    id,
+    imageUrl: getOptimizedImageUrl(posterUrl, 900),
+    mediaType,
+    thumbnailUrl: getOptimizedImageUrl(posterUrl, 180, 64),
+  };
+}
+
+function getOptimizedImageUrl(source: string | undefined, width: number, quality = 72) {
+  if (!source) return undefined;
+
+  const params = new URLSearchParams({
+    q: String(quality),
+    src: source,
+    w: String(width),
+  });
+
+  return `/api/image?${params.toString()}`;
 }
 
 function json(body: unknown, status = 200, headers: Record<string, string> = {}) {
@@ -150,6 +180,12 @@ function json(body: unknown, status = 200, headers: Record<string, string> = {})
       ...headers,
     },
   });
+}
+
+function normalizeLimit(value: string | null) {
+  const limit = Number(value);
+  if (!Number.isFinite(limit)) return 12;
+  return Math.min(Math.max(Math.trunc(limit), 1), 24);
 }
 
 function getEnv(name: string) {

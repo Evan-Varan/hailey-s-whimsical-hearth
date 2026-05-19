@@ -22,20 +22,18 @@ export const Route = createFileRoute("/privacy")({
 
 function PrivacyPage() {
   return (
-    <main className="max-w-3xl mx-auto px-6 py-16">
-      <div className="space-y-4">
-        <span className="tag-chip rose">privacy</span>
-        <h1 className="font-hand text-6xl md:text-7xl text-foreground">Privacy Policy</h1>
-        <p className="font-serif-display italic text-muted-foreground">
-          Last updated May 17, 2026
-        </p>
+    <main className="max-w-4xl mx-auto px-6 py-24 animate-ink">
+      <div className="space-y-6 mb-16">
+        <span className="tag-chip rose">legal notes</span>
+        <h1 className="font-display italic text-6xl md:text-8xl text-foreground leading-tight tracking-tight">Privacy Policy</h1>
+        <div className="marginalia text-primary/60 text-xl">
+          last updated May 19, 2026
+        </div>
       </div>
 
-      <div className="paper-card p-8 md:p-10 mt-10 font-serif-display text-foreground/85 leading-relaxed space-y-7">
-        <section className="space-y-3">
-          <h2 className="font-sans-ui text-sm uppercase tracking-[0.22em] text-muted-foreground">
-            Overview
-          </h2>
+      <div className="paper-card p-10 md:p-16 bg-card/60 font-serif italic text-xl text-foreground/85 leading-relaxed space-y-12">
+        <section className="space-y-4">
+          <div className="font-marginalia text-primary/60 text-lg uppercase tracking-widest">Overview</div>
           <p>
             This is a personal website operated by Hailey Adkins. The site displays public
             and authorized content from connected services, including Instagram, Spotify,
@@ -43,10 +41,8 @@ function PrivacyPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-sans-ui text-sm uppercase tracking-[0.22em] text-muted-foreground">
-            Information This Site Uses
-          </h2>
+        <section className="space-y-4">
+          <div className="font-marginalia text-primary/60 text-lg uppercase tracking-widest">Information This Site Uses</div>
           <p>
             The site may display content retrieved from connected accounts, such as public
             Instagram media, Spotify listening data, Pinterest pins, and journal posts. API
@@ -59,10 +55,8 @@ function PrivacyPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-sans-ui text-sm uppercase tracking-[0.22em] text-muted-foreground">
-            Third-Party Services
-          </h2>
+        <section className="space-y-4">
+           <div className="font-marginalia text-primary/60 text-lg uppercase tracking-widest">Third-Party Services</div>
           <p>
             This site may connect to Instagram, Spotify, Pinterest, Substack, Cloudflare, and
             similar service providers to load content, host the site, or keep the site running.
@@ -70,35 +64,25 @@ function PrivacyPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-sans-ui text-sm uppercase tracking-[0.22em] text-muted-foreground">
-            Contact Forms And Email
-          </h2>
+        <section className="space-y-4">
+          <div className="font-marginalia text-primary/60 text-lg uppercase tracking-widest">Contact Forms And Email</div>
           <p>
             If a visitor contacts Hailey directly, any information they choose to send, such as
             a name, email address, or message, may be used to respond to that request.
           </p>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-sans-ui text-sm uppercase tracking-[0.22em] text-muted-foreground">
-            Data Requests
-          </h2>
+        <section className="space-y-4">
+           <div className="font-marginalia text-primary/60 text-lg uppercase tracking-widest">Data Requests</div>
           <p>
             Visitors can request information about data they have provided directly, or ask for
             that data to be deleted, by contacting the site owner.
           </p>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-sans-ui text-sm uppercase tracking-[0.22em] text-muted-foreground">
-            Changes
-          </h2>
-          <p>
-            This privacy policy may be updated as the website changes or as connected services
-            are added or removed.
-          </p>
-        </section>
+        <div className="mt-12 pt-12 border-t border-border/20 text-center">
+           <div className="marginalia text-primary/40">stay whimsical, stay secure</div>
+        </div>
       </div>
     </main>
   );

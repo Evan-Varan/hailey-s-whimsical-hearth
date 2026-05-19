@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { List, Moon, SunDim, X } from "@phosphor-icons/react";
+import { List, Moon, SunDim, X, Sparkle } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
 const navItems = [
@@ -14,10 +14,18 @@ const navItems = [
 export function SiteHeader() {
   const [dark, setDark] = useState(false);
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const stored = typeof window !== "undefined" && localStorage.getItem("theme");
     if (stored === "dark") setDark(true);
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -32,74 +40,115 @@ export function SiteHeader() {
   }, [dark]);
 
   return (
-    <header className="relative z-30 border-b border-border/60 backdrop-blur-sm bg-background/70 sticky top-0">
-      <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between gap-6">
-        <Link to="/" className="group relative shrink-0 py-1 pr-3" aria-label="Hailey Adkins home">
-          <span className="relative inline-flex items-end">
-            <span className="font-hand text-[2.05rem] italic leading-[0.85] text-foreground transition-colors group-hover:text-primary">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
+        scrolled
+          ? "py-2 px-6"
+          : "py-6 px-6"
+      }`}
+    >
+      <div
+        className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-500 ease-in-out ${
+          scrolled
+            ? "bg-card/90 backdrop-blur-md border border-border shadow-soft px-6 py-2 rounded-full max-w-4xl"
+            : "bg-transparent border-b border-border/20 pb-4"
+        }`}
+      >
+        <Link to="/" className="group flex items-center gap-2" aria-label="Hailey Adkins home">
+          <div className={`relative transition-all duration-500 ${scrolled ? "scale-90" : "scale-100"}`}>
+            <span className="font-display italic text-3xl text-foreground group-hover:text-primary transition-colors">
               Hailey
             </span>
-            <span className="mb-0.5 ml-1.5 font-serif-display text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-primary">
+            <span className="font-marginalia text-sm text-primary absolute -top-1 -right-4 rotate-12">
               Adkins
             </span>
-            <span className="absolute -bottom-2 left-0 right-1 h-px bg-primary/45" aria-hidden>
-              <span className="absolute right-0 top-0 h-px w-5 bg-accent/80" />
-            </span>
-          </span>
+            {!scrolled && (
+              <div className="absolute -bottom-2 left-0 right-0 h-px bg-primary/30 scale-x-110" />
+            )}
+          </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8 font-serif-display italic text-[15px] text-muted-foreground">
+        <nav className="hidden md:flex items-center gap-10">
           {navItems.map((n) => (
             <Link
               key={n.to}
               to={n.to}
               activeOptions={{ exact: n.to === "/" }}
               activeProps={{ className: "text-primary" }}
-              className="relative hover:text-primary transition-colors after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-px after:bg-current after:scale-x-0 hover:after:scale-x-100 after:origin-left after:transition-transform data-[status=active]:after:scale-x-100"
+              className={`font-display text-lg italic transition-all duration-300 hover:text-primary relative group/nav ${
+                scrolled ? "text-[16px]" : "text-[18px]"
+              }`}
             >
               {n.label}
+              <span className="absolute -bottom-1 left-0 right-0 h-px bg-primary scale-x-0 group-hover/nav:scale-x-100 transition-transform origin-center" />
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <button
             aria-label="Toggle dark mode"
             onClick={() => setDark((d) => !d)}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
+            className="p-2 rounded-full hover:bg-muted transition-colors text-foreground/70 hover:text-primary"
           >
             {dark ? (
-              <SunDim weight="duotone" className="w-4 h-4" />
+              <SunDim weight="duotone" className="w-5 h-5" />
             ) : (
-              <Moon weight="duotone" className="w-4 h-4" />
+              <Moon weight="duotone" className="w-5 h-5" />
             )}
           </button>
-          <button
-            aria-label="Menu"
-            className="md:hidden p-2 rounded-full hover:bg-muted transition-colors"
-            onClick={() => setOpen((o) => !o)}
-          >
-            {open ? <X className="w-4 h-4" /> : <List className="w-4 h-4" />}
-          </button>
+          
+          <div className="md:hidden">
+            <button
+              aria-label="Menu"
+              className="p-2 rounded-full hover:bg-muted transition-colors text-foreground"
+              onClick={() => setOpen((o) => !o)}
+            >
+              {open ? <X className="w-6 h-6" /> : <List className="w-6 h-6" />}
+            </button>
+          </div>
+
+          {scrolled && (
+            <div className="hidden md:block ml-2 text-primary/30">
+              <Sparkle weight="fill" className="w-3 h-3 animate-twinkle" />
+            </div>
+          )}
         </div>
       </div>
 
-      {open && (
-        <nav className="md:hidden border-t border-border/60 px-6 py-4 flex flex-col gap-3 font-serif-display italic text-foreground bg-background">
+      {/* Mobile Nav Overlay */}
+      <div
+        className={`md:hidden fixed inset-0 z-40 bg-background/95 backdrop-blur-xl transition-all duration-500 ease-in-out ${
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex flex-col items-center justify-center h-full gap-8 px-6">
+          <div className="absolute top-8 right-8">
+            <button
+              onClick={() => setOpen(false)}
+              className="p-3 rounded-full bg-card border border-border"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
           {navItems.map((n) => (
             <Link
               key={n.to}
               to={n.to}
               onClick={() => setOpen(false)}
               activeOptions={{ exact: n.to === "/" }}
-              activeProps={{ className: "text-primary" }}
-              className="py-1"
+              className="font-display italic text-4xl text-foreground hover:text-primary transition-colors"
             >
               {n.label}
             </Link>
           ))}
-        </nav>
-      )}
+          <div className="mt-8 flex items-center gap-4 text-primary/40">
+            <Sparkle weight="fill" className="w-4 h-4" />
+            <div className="w-20 h-px bg-current" />
+            <Sparkle weight="fill" className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
     </header>
   );
 }

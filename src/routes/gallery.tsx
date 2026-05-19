@@ -6,21 +6,22 @@ import {
   MusicNotes,
   PinterestLogo,
   VinylRecord,
+  Sparkle
 } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/gallery")({
   head: () => ({
     meta: [
-      { title: "Gallery — Hailey Adkins" },
+      { title: "Visual Scrapbook — Hailey Adkins" },
       {
         name: "description",
         content:
           "A little visual scrapbook — cottagecore moments, crochet, cats, horses, and moonlit skies.",
       },
-      { property: "og:title", content: "Gallery — Hailey Adkins" },
+      { property: "og:title", content: "Visual Scrapbook — Hailey Adkins" },
       { property: "og:description", content: "From the camera roll: a cozy visual scrapbook." },
     ],
   }),
@@ -29,16 +30,20 @@ export const Route = createFileRoute("/gallery")({
 
 type InstagramFeed = {
   configured: boolean;
-  items: Array<{
-    id: string;
-    caption: string;
-    imageUrl?: string;
-    mediaType: string;
-    media?: InstagramPostMedia[];
-    permalink: string;
-    timestamp: string;
-  }>;
+  items: InstagramPost[];
+  nextCursor?: string | null;
+  hasMore?: boolean;
   error?: string;
+};
+
+type InstagramPost = {
+  id: string;
+  caption: string;
+  imageUrl?: string;
+  mediaType: string;
+  media?: InstagramPostMedia[];
+  permalink: string;
+  timestamp: string;
 };
 
 type InstagramPostMedia = {
@@ -46,6 +51,7 @@ type InstagramPostMedia = {
   imageUrl?: string;
   mediaUrl?: string;
   mediaType: string;
+  thumbnailUrl?: string;
 };
 
 type SpotifyTrack = {
@@ -95,108 +101,146 @@ function GalleryPage() {
   const [topTracks, setTopTracks] = useState<SpotifyTopTracks>();
   const [recentTracks, setRecentTracks] = useState<SpotifyRecentlyPlayed>();
   const [pinterest, setPinterest] = useState<PinterestFeed>();
+  
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadSocialFeeds() {
-      const [
-        instagramResult,
-        nowPlayingResult,
-        topTracksResult,
-        recentTracksResult,
-        pinterestResult,
-      ] = await Promise.allSettled([
-        fetchJson<InstagramFeed>("/api/instagram?view=carousel", controller.signal),
-        fetchJson<SpotifyNowPlaying>("/api/spotify/now-playing", controller.signal),
-        fetchJson<SpotifyTopTracks>("/api/spotify/top-tracks?limit=5", controller.signal),
-        fetchJson<SpotifyRecentlyPlayed>("/api/spotify/recently-played?limit=5", controller.signal),
-        fetchJson<PinterestFeed>("/api/pinterest?limit=8", controller.signal),
-      ]);
-
-      if (controller.signal.aborted) return;
-
-      if (instagramResult.status === "fulfilled") setInstagram(instagramResult.value);
-      else {
+    void fetchJson<InstagramFeed>("/api/instagram?view=carousel&limit=4", controller.signal)
+      .then((payload) => setInstagram(payload))
+      .catch(() => {
+        if (controller.signal.aborted) return;
         setInstagram({
           configured: true,
           items: [],
           error: "Instagram feed is unavailable right now.",
         });
-      }
+      });
 
-      if (nowPlayingResult.status === "fulfilled") setNowPlaying(nowPlayingResult.value);
-      else {
-        setNowPlaying({
-          configured: true,
-          playing: null,
-          error: "Spotify is unavailable right now.",
+    const idleTimer = window.setTimeout(() => {
+      void fetchJson<SpotifyNowPlaying>("/api/spotify/now-playing", controller.signal)
+        .then((payload) => setNowPlaying(payload))
+        .catch(() => {
+          if (controller.signal.aborted) return;
+          setNowPlaying({
+            configured: true,
+            playing: null,
+            error: "Spotify is unavailable right now.",
+          });
         });
-      }
 
-      if (topTracksResult.status === "fulfilled") setTopTracks(topTracksResult.value);
-      else {
-        setTopTracks({
-          configured: true,
-          items: [],
-          error: "Spotify tracks are unavailable right now.",
+      void fetchJson<SpotifyTopTracks>("/api/spotify/top-tracks?limit=5", controller.signal)
+        .then((payload) => setTopTracks(payload))
+        .catch(() => {
+          if (controller.signal.aborted) return;
+          setTopTracks({
+            configured: true,
+            items: [],
+            error: "Spotify tracks are unavailable right now.",
+          });
         });
-      }
 
-      if (recentTracksResult.status === "fulfilled") setRecentTracks(recentTracksResult.value);
-      else {
-        setRecentTracks({
-          configured: true,
-          items: [],
-          error: "Recent tracks are unavailable right now.",
+      void fetchJson<SpotifyRecentlyPlayed>("/api/spotify/recently-played?limit=5", controller.signal)
+        .then((payload) => setRecentTracks(payload))
+        .catch(() => {
+          if (controller.signal.aborted) return;
+          setRecentTracks({
+            configured: true,
+            items: [],
+            error: "Recent tracks are unavailable right now.",
+          });
         });
-      }
 
-      if (pinterestResult.status === "fulfilled") setPinterest(pinterestResult.value);
-      else {
-        setPinterest({
-          configured: true,
-          items: [],
-          error: "Pinterest pins are unavailable right now.",
+      void fetchJson<PinterestFeed>("/api/pinterest?limit=6", controller.signal)
+        .then((payload) => setPinterest(payload))
+        .catch(() => {
+          if (controller.signal.aborted) return;
+          setPinterest({
+            configured: true,
+            items: [],
+            error: "Pinterest pins are unavailable right now.",
+          });
         });
-      }
-    }
+    }, 350);
 
-    void loadSocialFeeds();
-
-    return () => controller.abort();
+    return () => {
+      window.clearTimeout(idleTimer);
+      controller.abort();
+    };
   }, []);
 
-  const instagramItems =
+  async function handleLoadMore() {
+    if (!instagram?.nextCursor || loadingMore) return;
+    
+    setLoadingMore(true);
+    const controller = new AbortController();
+    try {
+      const payload = await fetchJson<InstagramFeed>(
+        `/api/instagram?cursor=${instagram.nextCursor}&limit=4`,
+        controller.signal
+      );
+      setInstagram(prev => {
+        if (!prev) return payload;
+        return {
+          ...payload,
+          items: [...prev.items, ...payload.items]
+        };
+      });
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      console.error("Failed to load more Instagram items:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  const instagramItems = useMemo(() => 
     instagram?.items.filter(
       (item) =>
         item.imageUrl || item.media?.some((mediaItem) => mediaItem.imageUrl || mediaItem.mediaUrl),
-    ) ?? [];
-  const showInstagram = Boolean(instagram?.configured && instagramItems.length);
+    ) ?? [], [instagram?.items]);
+
   const instagramLoading = instagram === undefined;
+  const showInstagram = Boolean(instagram?.configured && (instagramItems.length || instagramLoading));
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-16">
-      <div className="text-center max-w-2xl mx-auto">
-        <span className="tag-chip gold">from the camera roll</span>
-        <h1 className="font-hand text-6xl md:text-7xl text-foreground mt-4">
-          A little visual scrapbook
+    <main className="max-w-7xl mx-auto px-6 py-24">
+      <div className="text-center max-w-2xl mx-auto mb-24">
+        <span className="tag-chip gold">visual scrapbook</span>
+        <h1 className="font-display italic text-6xl md:text-9xl text-foreground mt-4 leading-tight">
+          From the <span className="text-primary">camera roll</span>
         </h1>
-        <p className="font-serif-display italic text-lg text-muted-foreground mt-4">
-          Soft afternoons, finished projects, the cat being unhelpful — saved for later.
-        </p>
+        <div className="marginalia text-primary/60 text-2xl mt-4">
+          soft afternoons, finished projects, and fragments of moonlight
+        </div>
       </div>
 
-      <section className="grid lg:grid-cols-[minmax(0,1fr)_380px] gap-6 mt-14 items-start">
-        <InstagramSection
-          items={instagramItems}
-          loading={instagramLoading}
-          configured={instagram?.configured}
-          error={instagram?.error}
-          showInstagram={showInstagram}
-        />
+      <section className="grid lg:grid-cols-[1fr_360px] gap-16 items-start">
+        <div className="space-y-16">
+          <InstagramSection
+            items={instagramItems}
+            loading={instagramLoading}
+            configured={instagram?.configured}
+            error={instagram?.error}
+            showInstagram={showInstagram}
+          />
+          
+          {instagram?.hasMore && (
+            <div className="flex justify-center pt-8">
+              <button 
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="btn-ghost px-12 py-4 text-xl group"
+              >
+                {loadingMore ? "Gathering more moments..." : "Load more fragments"}
+                {!loadingMore && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+              </button>
+            </div>
+          )}
+        </div>
 
-        <div className="space-y-6">
+        <div className="space-y-16 lg:sticky lg:top-32">
           <SpotifyPanel nowPlaying={nowPlaying} topTracks={topTracks} />
           <RecentSpotifyPanel recentTracks={recentTracks} />
         </div>
@@ -207,7 +251,7 @@ function GalleryPage() {
   );
 }
 
-function getVisibleMedia(item: InstagramFeed["items"][number]) {
+function getVisibleMedia(item: InstagramPost) {
   const media = (item.media?.length ? item.media : undefined) ?? [
     {
       id: item.id,
@@ -227,47 +271,48 @@ function InstagramSection({
   error,
   showInstagram,
 }: {
-  items: InstagramFeed["items"];
+  items: InstagramPost[];
   loading: boolean;
   configured: boolean | undefined;
   error: string | undefined;
   showInstagram: boolean;
 }) {
   return (
-    <div className="space-y-8">
-      <div className="flex items-end justify-between gap-4 border-b border-border pb-6">
-        <div>
-          <span className="tag-chip rose">instagram</span>
-          <h2 className="font-hand mt-2 text-4xl text-foreground md:text-5xl">
-            lately from Hailey
-          </h2>
-          <p className="mt-2 max-w-sm font-serif-display italic text-sm text-muted-foreground">
-            A little visual scrapbook of recent posts, carousels, and tiny camera-roll moments.
-          </p>
+    <div className="space-y-16">
+      <div className="flex items-end justify-between gap-4 border-b border-border/20 pb-10">
+        <div className="space-y-2">
+          <span className="tag-chip rose">lately</span>
+          <h2 className="font-display italic text-5xl text-foreground">Scrapbook entries</h2>
         </div>
-        <div className="flex items-center gap-3">
-          <InstagramLogo weight="duotone" className="h-8 w-8 text-primary" aria-hidden />
+        <div className="flex items-center gap-3 text-primary/40">
+          <InstagramLogo weight="duotone" className="h-12 w-12" aria-hidden />
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-12">
           {Array.from({ length: 4 }).map((_, i) => (
             <InstagramPostSkeleton key={i} />
           ))}
         </div>
       ) : showInstagram ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
-          {items.map((item) => (
-            <InstagramPostCard key={item.id} item={item} />
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
+          {items.map((item, i) => (
+            <div 
+              key={item.id} 
+              className="defer-render relative"
+              style={{ transform: `rotate(${(i % 2 === 0 ? 0.5 : -0.5)}deg)` }}
+            >
+              <InstagramPostCard item={item} />
+            </div>
           ))}
         </div>
       ) : (
-        <div className="paper-card p-12 text-center max-w-xl mx-auto">
-          <p className="font-serif-display italic text-lg text-muted-foreground">
+        <div className="paper-card p-24 text-center bg-card/30 border-dashed">
+          <p className="font-serif italic text-2xl text-muted-foreground">
             {!configured
-              ? "Add an Instagram token to show Hailey's live feed here."
-              : (error ?? "No Instagram posts are available right now.")}
+              ? "The camera roll is resting for a moment."
+              : (error ?? "The visual archive is currently empty.")}
           </p>
         </div>
       )}
@@ -275,34 +320,29 @@ function InstagramSection({
   );
 }
 
-function InstagramPostCard({ item }: { item: InstagramFeed["items"][number] }) {
-  const visibleMedia = getVisibleMedia(item);
+const InstagramPostCard = memo(function InstagramPostCard({ item }: { item: InstagramPost }) {
+  const visibleMedia = useMemo(() => getVisibleMedia(item), [item]);
   const [activeIndex, setActiveIndex] = useState(0);
   const hasMultipleMedia = visibleMedia.length > 1;
+  const activeMedia = visibleMedia[activeIndex] ?? visibleMedia[0];
 
   return (
-    <article className="paper-card group flex flex-col overflow-hidden h-full">
-      <div className="relative aspect-square bg-muted/30 overflow-hidden">
-        <div
-          className="absolute inset-0 flex transition-transform duration-500 ease-out"
-          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-        >
-          {visibleMedia.map((media, index) => (
-            <div key={media.id} className="min-w-full h-full relative">
-              <InstagramMedia media={media} caption={item.caption} />
-            </div>
-          ))}
-        </div>
+    <article className="paper-card p-3 flex flex-col bg-card/40 overflow-hidden shadow-soft group">
+      {/* Tape Effect */}
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-primary/5 border border-primary/5 backdrop-blur-sm z-20" aria-hidden />
+
+      <div className="relative aspect-square bg-muted/20 overflow-hidden rounded-[1px]">
+        {activeMedia ? <InstagramMedia media={activeMedia} caption={item.caption} eager={false} /> : null}
 
         {hasMultipleMedia ? (
           <>
-            <div className="absolute inset-x-0 bottom-4 flex justify-center gap-1.5 z-10">
+            <div className="absolute inset-x-0 bottom-6 flex justify-center gap-2 z-10">
               {visibleMedia.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveIndex(index)}
                   className={`h-1.5 rounded-full transition-all ${
-                    index === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
+                    index === activeIndex ? "w-8 bg-white shadow-sm" : "w-1.5 bg-white/40 hover:bg-white/60"
                   }`}
                   aria-label={`Go to media ${index + 1}`}
                 />
@@ -311,139 +351,65 @@ function InstagramPostCard({ item }: { item: InstagramFeed["items"][number] }) {
             {activeIndex > 0 && (
               <button
                 onClick={() => setActiveIndex(activeIndex - 1)}
-                className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-card/80 flex items-center justify-center text-foreground backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <span className="sr-only">Previous</span>
-                <ArrowRight weight="bold" className="w-4 h-4 rotate-180" />
+                <ArrowRight weight="bold" className="w-6 h-6 rotate-180" />
               </button>
             )}
             {activeIndex < visibleMedia.length - 1 && (
               <button
                 onClick={() => setActiveIndex(activeIndex + 1)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-card/80 flex items-center justify-center text-foreground backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <span className="sr-only">Next</span>
-                <ArrowRight weight="bold" className="w-4 h-4" />
+                <ArrowRight weight="bold" className="w-6 h-6" />
               </button>
             )}
-            <span className="absolute top-3 right-3 rounded-full bg-card/90 px-2 py-1 font-sans-ui text-[10px] uppercase tracking-[0.14em] text-foreground backdrop-blur">
-              {activeIndex + 1} / {visibleMedia.length}
-            </span>
           </>
         ) : null}
       </div>
 
-      <div className="p-6 md:p-8 flex flex-col flex-1">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <span className="font-sans-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+      <div className="p-8 md:p-10 flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-6">
+          <span className="font-marginalia text-xl text-primary/60">
             {formatPostDate(item.timestamp)}
           </span>
           <a
             href={item.permalink}
             target="_blank"
             rel="noreferrer"
-            className="text-muted-foreground hover:text-primary transition-colors"
-            title="View on Instagram"
+            className="text-primary/40 hover:text-primary transition-colors"
           >
-            <ArrowSquareOut weight="bold" className="w-4 h-4" />
+            <ArrowSquareOut weight="bold" className="w-6 h-6" />
           </a>
         </div>
-
-        <p className="font-serif-display italic text-foreground leading-relaxed flex-1 whitespace-pre-wrap">
+        
+        <p className="font-serif italic text-foreground leading-relaxed text-lg line-clamp-3 mb-10">
           {item.caption}
         </p>
 
-        <div className="mt-8 pt-6 border-t border-border/50 flex items-center justify-between">
-          <div className="flex gap-1.5">
+        <div className="mt-auto pt-8 border-t border-border/20 flex items-center justify-between">
+          <div className="flex gap-2.5">
             {visibleMedia.slice(0, 6).map((media, index) => (
               <button
                 key={media.id}
                 onClick={() => setActiveIndex(index)}
-                className={`w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${
+                className={`w-14 h-14 rounded-sm overflow-hidden border-2 transition-opacity ${
                   index === activeIndex
-                    ? "border-primary scale-110"
-                    : "border-transparent opacity-60 hover:opacity-100"
+                    ? "border-primary opacity-100"
+                    : "border-transparent opacity-55 hover:opacity-100"
                 }`}
+                aria-label={`Show image ${index + 1}`}
               >
-                <InstagramMedia media={media} caption="" />
+                <InstagramThumbnail media={media} />
               </button>
             ))}
-            {visibleMedia.length > 6 && (
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center font-hand text-sm text-muted-foreground">
-                +{visibleMedia.length - 6}
-              </div>
-            )}
           </div>
-          <span className="font-hand text-primary/40 text-xl">✦</span>
+          <Sparkle weight="fill" className="text-primary/10 w-8 h-8 animate-twinkle" />
         </div>
       </div>
     </article>
   );
-}
-
-function InstagramPostSkeleton() {
-  return (
-    <div className="paper-card overflow-hidden">
-      <Skeleton className="aspect-square rounded-none" />
-      <div className="p-8 space-y-4">
-        <Skeleton className="h-3 w-20" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-4/5" />
-        <Skeleton className="h-4 w-2/3" />
-        <div className="pt-6 border-t border-border mt-4">
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-10 rounded-lg" />
-            <Skeleton className="h-10 w-10 rounded-lg" />
-            <Skeleton className="h-10 w-10 rounded-lg" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function InstagramMedia({
-  media,
-  caption,
-  fit = "cover",
-}: {
-  media: InstagramPostMedia;
-  caption: string;
-  fit?: "cover" | "contain";
-}) {
-  const fitClass = fit === "contain" ? "object-contain" : "object-cover";
-
-  if (media.mediaType === "VIDEO" && media.mediaUrl) {
-    return (
-      <video
-        src={media.mediaUrl}
-        poster={media.imageUrl}
-        controls
-        preload="metadata"
-        className={`h-full w-full ${fitClass}`}
-      />
-    );
-  }
-
-  return (
-    <img
-      src={media.imageUrl ?? media.mediaUrl}
-      alt={caption}
-      loading="lazy"
-      className={`h-full w-full ${fitClass} transition-transform duration-700 group-hover:scale-105`}
-    />
-  );
-}
-
-function formatPostDate(timestamp: string) {
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return "recent post";
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-  }).format(date);
-}
+});
 
 function SpotifyPanel({
   nowPlaying,
@@ -457,16 +423,16 @@ function SpotifyPanel({
   const topTracksLoading = topTracks === undefined;
 
   return (
-    <aside className="paper-card p-6 md:p-8">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <span className="tag-chip gold">spotify</span>
-          <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-2">on repeat</h2>
-          <p className="font-serif-display italic text-sm text-muted-foreground mt-1">
-            top tracks from the last 4 weeks
-          </p>
+    <aside className="paper-card p-12 bg-card/60 relative defer-render">
+      <div className="absolute -top-4 -right-4 text-primary/10 -rotate-12 pointer-events-none">
+         <MusicNotes weight="fill" size={80} />
+      </div>
+
+      <div className="flex items-start justify-between mb-10 relative">
+        <div className="space-y-2">
+          <span className="tag-chip rose">spotify</span>
+          <h2 className="font-display italic text-5xl text-foreground">On repeat</h2>
         </div>
-        <MusicNotes weight="duotone" className="w-6 h-6 text-primary" aria-hidden />
       </div>
 
       {nowPlayingLoading ? (
@@ -476,144 +442,106 @@ function SpotifyPanel({
           href={nowPlaying.playing.spotifyUrl}
           target="_blank"
           rel="noreferrer"
-          className="mt-6 flex gap-4 rounded-2xl border border-border bg-card/70 p-4 transition-colors hover:border-primary"
+          className="group block mb-12"
         >
-          {nowPlaying.playing.imageUrl ? (
-            <img
-              src={nowPlaying.playing.imageUrl}
-              alt=""
-              className="h-20 w-20 rounded-xl object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="h-20 w-20 rounded-xl bg-muted grid place-items-center">
-              <VinylRecord weight="duotone" className="h-7 w-7 text-muted-foreground" />
+          <div className="paper-card p-1 relative mb-8 rotate-1">
+            <img src={nowPlaying.playing.imageUrl} alt="" decoding="async" className="w-full aspect-square object-cover" />
+            <div className="absolute -bottom-4 -right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-xl animate-float">
+               <VinylRecord weight="fill" className="w-8 h-8 animate-spin-slow" />
             </div>
-          )}
-          <div>
-            <p className="font-sans-ui text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-              {nowPlaying.playing.isPlaying ? "now playing" : "last playing"}
-            </p>
-            <p className="font-serif-display italic text-foreground mt-1">
-              {nowPlaying.playing.name}
-            </p>
-            <p className="font-serif-display italic text-sm text-muted-foreground">
-              {nowPlaying.playing.artists.join(", ")}
-            </p>
+          </div>
+          <div className="text-center space-y-2">
+             <div className="font-marginalia text-primary text-lg tracking-widest opacity-60 uppercase">now spinning</div>
+             <p className="font-display italic text-3xl text-foreground group-hover:text-primary transition-colors leading-tight">{nowPlaying.playing.name}</p>
+             <p className="font-serif italic text-muted-foreground text-lg">{nowPlaying.playing.artists.join(", ")}</p>
           </div>
         </a>
-      ) : (
-        <div className="mt-6 rounded-2xl border border-border bg-card/70 p-4">
-          <p className="font-serif-display italic text-muted-foreground">
-            {nowPlaying?.error ??
-              (nowPlaying?.configured
-                ? "Nothing is playing right now."
-                : "Add Spotify credentials to show Hailey's listening here.")}
-          </p>
-        </div>
-      )}
-
-      {topTracksLoading ? (
-        <TopTracksSkeleton />
-      ) : tracks.length ? (
-        <ol className="mt-6 space-y-3">
-          {tracks.map((track, index) => (
-            <li key={track.id ?? track.spotifyUrl}>
-              <a
-                href={track.spotifyUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-muted"
-              >
-                <span className="font-hand text-2xl text-accent w-7 shrink-0">{index + 1}</span>
-                {track.imageUrl ? (
-                  <img
-                    src={track.imageUrl}
-                    alt=""
-                    className="h-11 w-11 rounded-lg object-cover"
-                    loading="lazy"
-                  />
-                ) : null}
-                <span className="min-w-0">
-                  <span className="block truncate font-serif-display italic text-foreground">
-                    {track.name}
-                  </span>
-                  <span className="block truncate font-serif-display italic text-sm text-muted-foreground">
-                    {track.artists.join(", ")}
-                  </span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      ) : topTracks?.error ? (
-        <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
-          {topTracks.error}
-        </p>
       ) : null}
+
+      <div className="space-y-8">
+        <div className="font-marginalia text-primary/40 text-xl border-b border-border/20 pb-2">top monthly spins</div>
+        {topTracksLoading ? (
+          <TopTracksSkeleton />
+        ) : tracks.length ? (
+          <ol className="space-y-6 mt-6">
+            {tracks.map((track, index) => (
+              <li key={track.id ?? track.spotifyUrl}>
+                <a
+                  href={track.spotifyUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-5 group"
+                >
+                  <span className="font-marginalia text-3xl text-primary/20 w-8 shrink-0">{index + 1}</span>
+                  <div className="w-14 h-14 paper-card p-0.5 shrink-0 rotate-1">
+                    <img src={track.imageUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-serif italic text-foreground group-hover:text-primary transition-colors leading-tight">{track.name}</p>
+                    <p className="truncate font-marginalia text-primary/50 text-sm mt-0.5">{track.artists.join(", ")}</p>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ol>
+        ) : null}
+      </div>
     </aside>
   );
 }
 
-function RecentSpotifyPanel({ recentTracks }: { recentTracks: SpotifyRecentlyPlayed | undefined }) {
+function RecentSpotifyPanel({
+  recentTracks,
+}: {
+  recentTracks: SpotifyRecentlyPlayed | undefined;
+}) {
   const tracks = recentTracks?.items ?? [];
   const loading = recentTracks === undefined;
 
   return (
-    <aside className="paper-card p-6 md:p-8">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <span className="tag-chip rose">spotify</span>
-          <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-2">recent spins</h2>
-          <p className="font-serif-display italic text-sm text-muted-foreground mt-1">
-            the last few things I've listened to
-          </p>
+    <aside className="paper-card p-12 bg-primary/5 border-primary/10 -rotate-1 defer-render">
+      <div className="flex items-start justify-between mb-10">
+        <div className="space-y-2">
+          <span className="tag-chip rose">lately</span>
+          <h2 className="font-display italic text-5xl text-foreground">Recent spins</h2>
         </div>
-        <VinylRecord weight="duotone" className="w-6 h-6 text-primary" aria-hidden />
+        <VinylRecord weight="duotone" className="w-10 h-10 text-primary/30" />
       </div>
 
       {loading ? (
         <TopTracksSkeleton />
-      ) : tracks.length ? (
-        <ol className="mt-6 space-y-3">
-          {tracks.map((track, index) => (
+      ) : (
+        <ol className="space-y-8">
+          {tracks.map((track) => (
             <li key={track.id ?? track.spotifyUrl}>
               <a
                 href={track.spotifyUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-muted"
+                className="flex items-center gap-5 group"
               >
-                <span className="font-hand text-2xl text-accent w-7 shrink-0">{index + 1}</span>
-                {track.imageUrl ? (
-                  <img
-                    src={track.imageUrl}
-                    alt=""
-                    className="h-11 w-11 rounded-lg object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-11 w-11 rounded-lg bg-muted grid place-items-center">
-                    <MusicNotes weight="duotone" className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-                <span className="min-w-0">
-                  <span className="block truncate font-serif-display italic text-foreground">
-                    {track.name}
-                  </span>
-                  <span className="block truncate font-serif-display italic text-sm text-muted-foreground">
-                    {track.artists.join(", ")}
-                  </span>
-                </span>
+                <div className="w-14 h-14 paper-card p-0.5 shrink-0 rotate-1">
+                  {track.imageUrl ? (
+                    <img src={track.imageUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-muted/20 grid place-items-center">
+                      <MusicNotes weight="duotone" className="w-6 h-6 text-primary/20" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-serif italic text-foreground group-hover:text-primary transition-colors leading-tight">{track.name}</p>
+                  <p className="truncate font-marginalia text-primary/50 text-sm mt-0.5">{track.artists.join(", ")}</p>
+                </div>
               </a>
             </li>
           ))}
         </ol>
-      ) : (
-        <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
-          {recentTracks?.error ?? "No recent tracks available."}
-        </p>
       )}
+      
+      <div className="mt-12 pt-8 border-t border-primary/10 font-marginalia text-primary/40 text-center text-lg italic">
+        synced from the cottage player
+      </div>
     </aside>
   );
 }
@@ -624,69 +552,56 @@ function PinterestPanel({ pinterest }: { pinterest: PinterestFeed | undefined })
   const comingSoon = !loading && !pinterest?.configured;
 
   return (
-    <section className="paper-card p-6 md:p-8 mt-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <span className="tag-chip rose">coming soon</span>
-          <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-2">
-            Pinterest inspiration
-          </h2>
-          <p className="font-serif-display italic text-sm text-muted-foreground mt-1">
-            a cozy board of saved ideas is on the way
-          </p>
+    <section className="mt-32 pt-24 border-t border-border/20 defer-render">
+      <div className="flex items-end justify-between mb-20 px-4">
+        <div className="space-y-2">
+          <span className="tag-chip gold">inspiration</span>
+          <h2 className="font-display italic text-7xl md:text-8xl text-foreground leading-tight tracking-tight">Pinterest board</h2>
+          <div className="marginalia text-primary/60 text-2xl">saved ideas and cozy fragments</div>
         </div>
-        <PinterestLogo weight="duotone" className="w-6 h-6 text-primary" aria-hidden />
+        <PinterestLogo weight="duotone" className="w-16 h-16 text-primary/20 hidden md:block" />
       </div>
 
       {comingSoon ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-border bg-card/70 p-6">
-          <p className="font-serif-display italic text-muted-foreground">
-            Hailey's favorite pins, projects, outfits, and home inspiration will live here soon.
+        <div className="paper-card p-32 text-center bg-card/30 border-dashed border-2">
+          <p className="font-serif italic text-3xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+            A curated board of pattern ideas, outfits, and home inspiration is currently being pinned to the mantle.
           </p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 lg:gap-16">
           {loading
             ? Array.from({ length: 8 }, (_, index) => <PinterestPinSkeleton key={index} />)
-            : pins.map((pin) => (
+            : pins.map((pin, i) => (
                 <a
                   key={pin.id}
                   href={pin.link}
                   target="_blank"
                   rel="noreferrer"
-                  className="group overflow-hidden rounded-2xl border border-border bg-card/70"
+                  className="group block"
+                  style={{ transform: `rotate(${(i % 2 === 0 ? 1.5 : -1.5)}deg)` }}
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-                    <img
-                      src={pin.imageUrl}
-                      alt={pin.title}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <span className="absolute right-2 top-2 rounded-full bg-card/85 p-2 text-foreground backdrop-blur">
-                      <ArrowSquareOut weight="bold" className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                  <div className="p-4">
-                    <p className="line-clamp-2 font-serif-display italic text-foreground">
-                      {pin.title}
-                    </p>
-                    {pin.description ? (
-                      <p className="line-clamp-2 font-serif-display italic text-sm text-muted-foreground mt-2">
-                        {pin.description}
+                  <div className="paper-card p-2 bg-white shadow-soft">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-[1px]">
+                      <img
+                        src={pin.imageUrl}
+                        alt={pin.title}
+                        loading="lazy"
+                        decoding="async"
+                        sizes="(min-width: 1024px) 25vw, 50vw"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="p-8">
+                      <p className="font-serif italic text-foreground text-sm line-clamp-2 leading-relaxed">
+                        {pin.title}
                       </p>
-                    ) : null}
+                    </div>
                   </div>
                 </a>
               ))}
         </div>
       )}
-
-      {!loading && pinterest?.configured && !pins.length ? (
-        <p className="font-serif-display italic text-sm text-muted-foreground mt-5">
-          {pinterest.error ?? "No Pinterest pins are available right now."}
-        </p>
-      ) : null}
     </section>
   );
 }
@@ -695,7 +610,7 @@ function PinterestPinSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card/70">
       <Skeleton className="aspect-[3/4] rounded-none" />
-      <div className="space-y-2 p-4">
+      <div className="space-y-2 p-6">
         <Skeleton className="h-4 w-4/5" />
         <Skeleton className="h-4 w-2/3" />
       </div>
@@ -705,11 +620,11 @@ function PinterestPinSkeleton() {
 
 function NowPlayingSkeleton() {
   return (
-    <div className="mt-6 flex gap-4 rounded-2xl border border-border bg-card/70 p-4">
-      <Skeleton className="h-20 w-20 shrink-0 rounded-xl" />
-      <div className="min-w-0 flex-1 space-y-3 py-1">
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-5 w-4/5" />
+    <div className="mt-6 flex gap-4 rounded-2xl border border-border bg-card/70 p-6">
+      <Skeleton className="h-24 w-24 shrink-0 rounded-xl" />
+      <div className="min-w-0 flex-1 space-y-4 py-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-6 w-4/5" />
         <Skeleton className="h-4 w-2/3" />
       </div>
     </div>
@@ -718,12 +633,12 @@ function NowPlayingSkeleton() {
 
 function TopTracksSkeleton() {
   return (
-    <ol className="mt-6 space-y-3" aria-hidden>
+    <ol className="mt-8 space-y-6" aria-hidden>
       {Array.from({ length: 5 }, (_, index) => (
-        <li key={index} className="flex items-center gap-3 rounded-xl p-2">
-          <Skeleton className="h-8 w-7 shrink-0" />
-          <Skeleton className="h-11 w-11 shrink-0 rounded-lg" />
-          <span className="min-w-0 flex-1 space-y-2">
+        <li key={index} className="flex items-center gap-5">
+          <Skeleton className="h-8 w-8 shrink-0" />
+          <Skeleton className="h-14 w-14 shrink-0 rounded-lg" />
+          <span className="min-w-0 flex-1 space-y-3">
             <Skeleton className="h-4 w-4/5" />
             <Skeleton className="h-3 w-2/3" />
           </span>
@@ -731,6 +646,88 @@ function TopTracksSkeleton() {
       ))}
     </ol>
   );
+}
+
+function InstagramPostSkeleton() {
+  return (
+    <div className="paper-card p-3 bg-card/40">
+      <Skeleton className="aspect-square rounded-none" />
+      <div className="p-10 space-y-6">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-4/5" />
+        <div className="pt-8 border-t border-border/20 flex gap-3">
+           <Skeleton className="h-14 w-14 rounded-sm" />
+           <Skeleton className="h-14 w-14 rounded-sm" />
+           <Skeleton className="h-14 w-14 rounded-sm" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InstagramMedia({
+  media,
+  caption,
+  fit = "cover",
+  eager = false,
+}: {
+  media: InstagramPostMedia;
+  caption: string;
+  fit?: "cover" | "contain";
+  eager?: boolean;
+}) {
+  const fitClass = fit === "contain" ? "object-contain" : "object-cover";
+
+  if (media.mediaType === "VIDEO" && media.mediaUrl) {
+    return (
+      <img
+        src={media.imageUrl}
+        alt={caption}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        sizes="(min-width: 1024px) 40vw, (min-width: 768px) 50vw, 100vw"
+        className={`h-full w-full ${fitClass}`}
+      />
+    );
+  }
+
+  return (
+    <img
+      src={media.imageUrl ?? media.mediaUrl}
+      alt={caption}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      sizes="(min-width: 1024px) 40vw, (min-width: 768px) 50vw, 100vw"
+      className={`h-full w-full ${fitClass}`}
+    />
+  );
+}
+
+function InstagramThumbnail({ media }: { media: InstagramPostMedia }) {
+  const imageUrl = media.thumbnailUrl ?? media.imageUrl ?? media.mediaUrl;
+  if (!imageUrl) return null;
+
+  return (
+    <img
+      src={imageUrl}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      className="h-full w-full object-cover"
+    />
+  );
+}
+
+function formatPostDate(timestamp: string) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "recent moment";
+
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  }).format(date);
 }
 
 async function fetchJson<T>(url: string, signal: AbortSignal) {
