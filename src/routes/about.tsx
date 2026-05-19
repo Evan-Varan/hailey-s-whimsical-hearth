@@ -197,25 +197,44 @@ function AboutPage() {
         <Fact label="best reached for" value="kind notes and collaborations" />
       </section>
 
-      <section id="contact" className="mt-16">
-        <div className="mx-auto max-w-3xl">
-          <div className="paper-card overflow-hidden">
-            <div className="border-b border-border bg-card/70 p-7 md:p-9">
+      <section id="contact" className="mt-20 mb-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="grid lg:grid-cols-[1fr_1.4fr] gap-0 overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-soft)]">
+            {/* Left side - Header content */}
+            <div className="flex flex-col justify-center p-8 md:p-10 lg:p-12 bg-gradient-to-br from-card via-card to-muted/30">
               <span className="tag-chip rose">send a note</span>
-              <h2 className="font-hand text-5xl md:text-6xl text-foreground mt-4">Mail Hailey</h2>
-              <p className="font-serif-display italic text-muted-foreground mt-4 max-w-xl">
+              <h2 className="font-hand text-4xl md:text-5xl text-foreground mt-5 leading-tight">
+                Mail Hailey
+              </h2>
+              <p className="font-serif-display text-muted-foreground mt-4 leading-relaxed text-balance">
                 A quiet place for questions, kind replies, project notes, and collaboration ideas.
               </p>
+              
+              <div className="mt-8 pt-6 border-t border-border/60">
+                <p className="font-sans-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 mb-3">
+                  You can also find me on
+                </p>
+                <a 
+                  href="https://instagram.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-foreground/80 hover:text-primary transition-colors"
+                >
+                  <InstagramLogo weight="duotone" className="w-4 h-4" />
+                  <span className="font-serif-display">Instagram</span>
+                </a>
+              </div>
             </div>
 
-            <form className="space-y-6 p-6 md:p-9" onSubmit={submitContact}>
+            {/* Right side - Form */}
+            <form className="p-8 md:p-10 lg:p-12 bg-card/50" onSubmit={submitContact}>
               <div className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="Your name">
                     <input
                       name="name"
                       required
-                      className="contact-input"
+                      className="contact-input-minimal"
                       placeholder="Jane Reader"
                     />
                   </Field>
@@ -224,14 +243,15 @@ function AboutPage() {
                       name="email"
                       type="email"
                       required
-                      className="contact-input"
+                      className="contact-input-minimal"
                       placeholder="jane@example.com"
                     />
                   </Field>
                 </div>
-                <div className="grid sm:grid-cols-[0.8fr_1.2fr] gap-4">
+                
+                <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="Topic">
-                    <select name="topic" className="contact-input">
+                    <select name="topic" className="contact-input-minimal">
                       <option>general note</option>
                       <option>crochet</option>
                       <option>tarot or astrology</option>
@@ -243,47 +263,52 @@ function AboutPage() {
                     <input
                       name="subject"
                       required
-                      className="contact-input"
-                      placeholder="A small note from the internet"
+                      className="contact-input-minimal"
+                      placeholder="A small note..."
                     />
                   </Field>
                 </div>
+                
                 <Field label="Message">
                   <textarea
                     name="message"
                     required
-                    rows={8}
-                    className="contact-input resize-none"
+                    rows={5}
+                    className="contact-input-minimal resize-none"
                     placeholder="Write your note here..."
                   />
                 </Field>
               </div>
 
-              <div className="flex flex-col gap-4 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  {contactError ? (
-                    <p className="font-serif-display italic text-sm text-destructive">
-                      {contactError}
-                    </p>
-                  ) : null}
-                  {contactStatus === "sent" ? (
-                    <p className="font-serif-display italic text-sm text-primary">
-                      Your note was sent. Thank you for writing.
-                    </p>
-                  ) : null}
-                  {contactStatus === "draft" ? (
-                    <p className="font-serif-display italic text-sm text-primary">
-                      Your email draft is open. Send it from your mail app to finish.
-                    </p>
-                  ) : null}
+              <div className="mt-6 pt-5 border-t border-border/40">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="min-h-[20px]">
+                    {contactError ? (
+                      <p className="font-serif-display italic text-sm text-destructive">
+                        {contactError}
+                      </p>
+                    ) : null}
+                    {contactStatus === "sent" ? (
+                      <p className="font-serif-display italic text-sm text-primary">
+                        Your note was sent. Thank you for writing.
+                      </p>
+                    ) : null}
+                    {contactStatus === "draft" ? (
+                      <p className="font-serif-display italic text-sm text-primary">
+                        Your email draft is open. Send it from your mail app to finish.
+                      </p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="submit"
+                    className="group inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-sans-ui text-sm font-medium tracking-wide transition-all hover:shadow-[var(--shadow-glow)] hover:-translate-y-0.5 disabled:opacity-60 disabled:pointer-events-none"
+                    disabled={contactStatus === "sending"}
+                  >
+                    <Envelope weight="duotone" className="w-4 h-4" />
+                    {contactStatus === "sending" ? "Sending..." : "Send note"}
+                    <ArrowRight weight="bold" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  className="btn-ghost justify-center"
-                  disabled={contactStatus === "sending"}
-                >
-                  {contactStatus === "sending" ? "Sending..." : "Send note"}
-                </button>
               </div>
             </form>
           </div>

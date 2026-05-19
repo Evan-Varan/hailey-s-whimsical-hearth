@@ -303,6 +303,49 @@
     color: var(--color-muted-foreground);
   }
 
+  /* Modern minimal contact input */
+  .contact-input-minimal {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    background: transparent;
+    padding: 0.75rem 0;
+    color: var(--color-foreground);
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    outline: none;
+    transition:
+      border-color 0.3s ease,
+      background-color 0.3s ease;
+  }
+  .contact-input-minimal:focus {
+    border-color: var(--color-primary);
+    background: color-mix(in oklab, var(--color-primary) 4%, transparent);
+  }
+  .contact-input-minimal::placeholder {
+    color: var(--color-muted-foreground);
+    font-style: italic;
+  }
+  textarea.contact-input-minimal {
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: color-mix(in oklab, var(--color-background) 50%, transparent);
+  }
+  textarea.contact-input-minimal:focus {
+    border-color: var(--color-primary);
+    background: color-mix(in oklab, var(--color-primary) 4%, transparent);
+  }
+  select.contact-input-minimal {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+    padding-right: 1.5rem;
+  }
+
   .scallop-divider {
     height: 14px;
     background-image: radial-gradient(circle at 7px 0, var(--color-background) 7px, transparent 7px);
